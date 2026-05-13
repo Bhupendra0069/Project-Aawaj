@@ -1,0 +1,59 @@
+{% load static %}<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - AAWAJ</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+<div class="login-page">
+    <div class="glass-card login-card">
+        <div style="text-align:center;margin-bottom:2rem;">
+            <div style="font-size:3rem;margin-bottom:0.5rem;">🎙️</div>
+            <h1 style="font-size:1.8rem;font-weight:800;background:var(--gradient-hero);background-clip: text;-webkit-text-fill-color:transparent;">AAWAJ</h1>
+            <p style="color:var(--text-secondary);font-size:0.9rem;margin-top:0.5rem;">Moderator & Government Portal</p>
+        </div>
+        <form id="loginForm">
+            {% csrf_token %}
+            <div class="form-group">
+                <label class="form-label">Username</label>
+                <input type="text" class="form-input" id="username" name="username" placeholder="Enter username" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Password</label>
+                <input type="password" class="form-input" id="password" name="password" placeholder="Enter password" required>
+            </div>
+            <p id="loginError" style="color:var(--danger);font-size:0.85rem;display:none;margin-bottom:1rem;"></p>
+            <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;" id="loginBtn">Login</button>
+        </form>
+        <div style="text-align:center;margin-top:1.5rem;">
+            <a href="/" style="color:var(--text-muted);font-size:0.85rem;text-decoration:none;">← Back to Home</a>
+        </div>
+    </div>
+</div>
+<script>
+document.getElementById('loginForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btn = document.getElementById('loginBtn');
+    btn.disabled = true; btn.textContent = 'Logging in...';
+    document.getElementById('loginError').style.display = 'none';
+    const formData = new FormData(e.target);
+    try {
+        const res = await fetch('/login/', { method: 'POST', body: formData });
+        const data = await res.json();
+        if (data.success) {
+            window.location.href = data.redirect;
+        } else {
+            document.getElementById('loginError').textContent = data.error || 'Login failed';
+            document.getElementById('loginError').style.display = 'block';
+        }
+    } catch (err) {
+        document.getElementById('loginError').textContent = 'Network error';
+        document.getElementById('loginError').style.display = 'block';
+    }
+    btn.disabled = false; btn.textContent = 'Login';
+});
+</script>
+</body>
+</html>

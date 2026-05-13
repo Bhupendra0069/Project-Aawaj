@@ -1,0 +1,313 @@
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                           🎙️ AAWAJ PLATFORM                                 │
+│                  Smart Civic Complaint Reporting System                     │
+│                     Built for Kathmandu Valley, Nepal 🇳🇵                    │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+1. PROJECT OVERVIEW
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Aawaj (आवाज) means “Voice” in Nepali.
+
+AAWAJ is an AI-powered civic complaint platform where citizens can report
+real-world public issues in kathmadu valley such as:
+
+• Broken roads / potholes
+• Garbage problems
+• Water leakage
+• Electricity issues
+• Health hazards
+• School / education problems
+• Corruption complaints
+• Public infrastructure damage
+
+Citizens simply upload image + auto location + optional text/audio in which between text and audion one is compulsory along with image and location.
+
+System automatically analyzes the issue and forwards structured reports
+to moderators and government dashboards.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+2. MAIN GOALS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✓ Give people a voice
+✓ Make complaint process easy
+✓ Use AI to automate report writing
+✓ Help government identify issues faster
+✓ Increase transparency
+✓ Build Kathmandu smart-city reporting model
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+3. COMPLETE SYSTEM ARCHITECTURE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+┌──────────────────────────────────────────────────────────────┐
+│                         FRONTEND                             │
+│  HTML, CSS, JavaScript / Tailwind CSS                       │
+│  Public Complaint Portal + Government Dashboard + Admin UI  │
+└──────────────────────────────────────────────────────────────┘
+                            │
+                            ▼
+                 REST API / Django Views
+                            │
+┌──────────────────────────────────────────────────────────────┐
+│                         BACKEND                              │
+│                         DJANGO                               │
+│                                                              │
+│  ┌──────────────┐  ┌────────────────┐  ┌──────────────────┐ │
+│  │ Auth Service │  │ Complaint Core │  │ Admin Service    │ │
+│  │ Login / Role │  │ Submit / Track │  │ Manage System    │ │
+│  └──────────────┘  └────────────────┘  └──────────────────┘ │
+│                                                              │
+│  ┌────────────────┐  ┌────────────────────────────────────┐ │
+│  │ Public API     │  │ Government Resolution Workflow     │ │
+│  │ Dashboard Data │  │ Action Taken / Resolved Reports    │ │
+│  └────────────────┘  └────────────────────────────────────┘ │
+└──────────────────────────────────────────────────────────────┘
+                            │
+                            ▼
+┌──────────────────────────────────────────────────────────────┐
+│                         AI LAYER                             │
+│                                                              │
+│  ┌────────────────────────────┐  ┌────────────────────────┐ │
+│  │ Image Verification Module  │  │ NLP Text Classification│ │
+│  │ Fake / Real Evidence Check │  │ Roads / Water / Power  │ │
+│  └────────────────────────────┘  └────────────────────────┘ │
+│                                                              │
+│  ┌────────────────────────────┐  ┌────────────────────────┐ │
+│  │ Priority Detection         │  │ Sentiment / Urgency AI │ │
+│  │ Emergency / High Severity  │  │ Angry / Risk Analysis  │ │
+│  └────────────────────────────┘  └────────────────────────┘ │
+└──────────────────────────────────────────────────────────────┘
+                            │
+                            ▼
+┌──────────────────────────────────────────────────────────────┐
+│                      DATABASE LAYER                          │
+│                                                              │
+│ SQLite                                        │
+│ Users, Complaints, Images, Audio, Categories, Actions        │
+│                                                              │
+│ Media Storage                                                │
+│ Complaint Images / Audio Files                               │
+│                                                              │
+│ Future Add-ons: Redis / AWS S3 / Cloudflare R2              │
+└──────────────────────────────────────────────────────────────┘
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+4. USER FLOW
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Citizen Opens Website
+        ↓
+Uploads Complaint Image (mandatory)
+        ↓
+Adds Location (when user try to write location recommended location like google maps)
+        ↓
+Optional Text / Audio (one is mandatory)
+        ↓
+AI Analyzes Complaint
+        ↓
+Creates Smart Complaint Report
+        ↓
+Stored in Database
+        ↓
+Admin Moderation (50/50 chances of report requried admin approve)
+        ↓
+Published Public Dashboard(those report who Ai detets fullt and thos are not fake send to publc dashboard)
+        ↓
+Government Can Take Action (this is directlyconnected to the databses of that report who are send to public dashboard and AI makes clesr report of that report and send to government dash
+which is connected in government offices)
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+5. MAIN FEATURES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+👤 Citizen Features
+-------------------
+✓ Anonymous complaint submission
+✓ Upload image (required)
+✓ Audio or text complaint (optional)
+✓ Smart location search
+✓ Track complaint by ID
+✓ View public complaints
+
+🤖 AI Features
+--------------
+✓ Auto classify issue
+✓ Detect fake/irrelevant image
+✓ Generate complaint description(i.e above optional text)
+✓ Priority score
+✓ Urgency detection
+
+🛡️ admin moderation Features
+------------------
+✓ Review complaints
+✓ Approve / Reject
+✓ Moderation logs
+
+🏛️ Government Features
+-----------------------
+✓ View approved complaints
+✓ Mark resolved
+✓ Search by area/category
+✓ Download reports
+
+🗺️ Map Features
+---------------
+-these are the hetamap of complain which are review and send to public dashboard by Ai detcts and Admin 
+✓ Complaint pins
+✓ Heat zones
+✓ Area-wise issue density
+
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+6. DATABASE TABLES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+users
+-----
+id
+username
+password
+role
+
+complaints
+----------
+id
+complaint_code
+description
+location_text
+latitude
+longitude
+status
+category
+ai_verdict
+created_at
+
+complaint_images
+----------------
+id
+complaint_id
+image
+
+complaint_audio
+---------------
+id
+complaint_id
+audio_file
+
+moderation_logs
+---------------
+id
+complaint_id
+admin
+action
+which one is best this or above one
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+7. API ENDPOINTS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+POST   /api/complaints/submit/
+GET    /api/complaints/<id>/status/
+POST   /api/complaints/<id>/upload-images/
+POST   /api/complaints/<id>/upload-audio/
+POST   /api/complaints/<id>/finalize/
+
+GET    /api/complaints/public/
+GET    /api/dashboard/stats/
+
+GET    /api/moderation/queue/
+POST   /api/moderation/<id>/action/
+
+GET    /api/government/complaints/
+POST   /api/government/<id>/action/
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+8. AI DECISION FLOW
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Image + Text Clear
+    → HIGH Confidence
+    → Publish Queue i.e directly government dashboard
+
+Only One Clear(i.e image blur 50/50)
+    → MEDIUM Confidence
+    → Manual Review 
+    -SEND ADMIN Moderation which see details of the cases and then decide to approve or reject
+Both Poor
+    → LOW Confidence
+    → Reject
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+9. TECHNOLOGY STACK
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Frontend:
+HTML / CSS / JavaScript / Tailwind
+
+Backend:
+Django
+Django REST Framework
+
+Database:
+SQLite (Current)
+PostgreSQL (Future)
+
+AI:
+OpenAI
+Google Vision API
+Whisper Speech-to-Text
+
+Deployment:
+Render / Railway / VPS / Nginx
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+10. FUTURE IMPROVEMENTS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✓ Nepali language support
+✓ Mobile app
+✓ SMS complaint system
+✓ WhatsApp bot
+✓ Live complaint heatmap
+✓ Auto government department routing
+✓ Duplicate complaint detection
+✓ Real-time notifications
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+11. PROJECT STATUS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Nothing only frontend
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+12. FINAL SUMMARY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+AAWAJ is not just a website.
+
+It is a digital voice of the people.
+
+Citizens report problems.
+AI organizes data.
+Admins verify truth.
+Government receives reality.
+
+Built for Kathmandu.
+Powered by People.
+Driven by Technology.
+
+🇳🇵 AAWAJ

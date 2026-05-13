@@ -1,0 +1,365 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Government Analytics - AAWAJ{% endblock %}
+{% block content %}
+<div class="container" style="padding-top:2rem;padding-bottom:4rem;">
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem;margin-bottom:2rem;">
+        <div>
+            <h1 class="section-title" style="margin-bottom:0.3rem;">Analytics Dashboard</h1>
+            <p style="color:var(--text-secondary);">Smart governance intelligence &amp; hotspot analysis</p>
+        </div>
+        <div style="display:flex;gap:0.5rem;">
+            <button class="btn btn-secondary btn-sm" onclick="refreshAnalytics()">Refresh Analytics</button>
+            <a href="/government/" class="btn btn-secondary btn-sm">Back to Dashboard</a>
+        </div>
+    </div>
+
+    <!-- Priority Zones -->
+    <div class="stats-grid" style="margin-bottom:2rem;" id="topStats">
+        <div class="stat-card glass-card"><div class="stat-number" id="sHotspots">0</div><div class="stat-label">Hotspot Zones</div></div>
+        <div class="stat-card glass-card"><div class="stat-number" id="sCritical">0</div><div class="stat-label">Critical Issues</div></div>
+        <div class="stat-card glass-card"><div class="stat-number" id="sResRate">0%</div><div class="stat-label">Resolution Rate</div></div>
+        <div class="stat-card glass-card"><div class="stat-number" id="sAvgRes">0h</div><div class="stat-label">Avg Response</div></div>
+    </div>
+
+    <!-- Tab Navigation -->
+    <div class="filter-bar" style="margin-bottom:1.5rem;">
+        <button class="filter-chip active" onclick="showTab('hotspots',this)">Hotspot Analysis</button>
+        <button class="filter-chip" onclick="showTab('performance',this)">Performance</button>
+        <button class="filter-chip" onclick="showTab('trends',this)">Trends</button>
+        <button class="filter-chip" onclick="showTab('severity',this)">Severity</button>
+        <button class="filter-chip" onclick="showTab('wards',this)">Ward Stats</button>
+    </div>
+
+    <!-- Hotspot Tab -->
+    <div id="tab-hotspots" class="analytics-tab">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;">
+            <div class="glass-card" style="padding:1.5rem;">
+                <h3 style="margin-bottom:1rem;color:var(--text-primary);">Top Priority Zones</h3>
+                <div id="priorityZonesList">Loading...</div>
+            </div>
+            <div class="glass-card" style="padding:1.5rem;">
+                <h3 style="margin-bottom:1rem;color:var(--text-primary);">Category Distribution</h3>
+                <canvas id="chartCategoryDist" height="250"></canvas>
+            </div>
+        </div>
+        <div class="glass-card" style="padding:1.5rem;margin-top:1.5rem;">
+            <h3 style="margin-bottom:1rem;color:var(--text-primary);">Hotspot Clusters</h3>
+            <div id="hotspotClustersList">Loading...</div>
+        </div>
+    </div>
+
+    <!-- Performance Tab -->
+    <div id="tab-performance" class="analytics-tab" style="display:none;">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;">
+            <div class="glass-card" style="padding:1.5rem;">
+                <h3 style="margin-bottom:1rem;color:var(--text-primary);">Performance Metrics</h3>
+                <div id="perfMetrics">Loading...</div>
+            </div>
+            <div class="glass-card" style="padding:1.5rem;">
+                <h3 style="margin-bottom:1rem;color:var(--text-primary);">Unresolved Trend (7 days)</h3>
+                <canvas id="chartUnresolved" height="250"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Trends Tab -->
+    <div id="tab-trends" class="analytics-tab" style="display:none;">
+        <div class="glass-card" style="padding:1.5rem;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+                <h3 style="color:var(--text-primary);">Complaint Trends</h3>
+                <select class="form-select" id="trendDays" onchange="loadTrends()" style="max-width:150px;">
+                    <option value="7">Last 7 days</option>
+                    <option value="14">Last 14 days</option>
+                    <option value="30" selected>Last 30 days</option>
+                </select>
+            </div>
+            <canvas id="chartTrends" height="300"></canvas>
+        </div>
+    </div>
+
+    <!-- Severity Tab -->
+    <div id="tab-severity" class="analytics-tab" style="display:none;">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;">
+            <div class="glass-card" style="padding:1.5rem;">
+                <h3 style="margin-bottom:1rem;color:var(--text-primary);">Severity Distribution</h3>
+                <canvas id="chartSeverity" height="250"></canvas>
+            </div>
+            <div class="glass-card" style="padding:1.5rem;">
+                <h3 style="margin-bottom:1rem;color:var(--text-primary);">Critical Zones</h3>
+                <div id="criticalZones">Loading...</div>
+            </div>
+        </div>
+        <div class="glass-card" style="padding:1.5rem;margin-top:1.5rem;">
+            <h3 style="margin-bottom:1rem;color:var(--text-primary);">Category Severity</h3>
+            <canvas id="chartCatSeverity" height="200"></canvas>
+        </div>
+    </div>
+
+    <!-- Wards Tab -->
+    <div id="tab-wards" class="analytics-tab" style="display:none;">
+        <div class="glass-card" style="padding:1.5rem;">
+            <h3 style="margin-bottom:1rem;color:var(--text-primary);">Ward-Level Statistics</h3>
+            <div style="overflow-x:auto;" id="wardTable">Loading...</div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const chartInstances = {};
+
+function destroyChart(id) {
+    if (chartInstances[id]) { chartInstances[id].destroy(); delete chartInstances[id]; }
+}
+
+function showTab(name, btn) {
+    document.querySelectorAll('.analytics-tab').forEach(t => t.style.display = 'none');
+    document.getElementById('tab-' + name).style.display = 'block';
+    document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+    if (btn) btn.classList.add('active');
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    loadHotspots(); loadPerformance(); loadTrends(); loadSeverity(); loadWards();
+});
+
+/* ===== HOTSPOTS ===== */
+async function loadHotspots() {
+    try {
+        const [zRes, hRes] = await Promise.all([
+            fetch('/api/analytics/priority-zones/'), fetch('/api/hotspots/')
+        ]);
+        const zones = await zRes.json();
+        const hotspots = await hRes.json();
+
+        document.getElementById('sHotspots').textContent = hotspots.count || 0;
+
+        // Priority zones list
+        const zList = zones.zones || [];
+        const el = document.getElementById('priorityZonesList');
+        if (!zList.length) { el.innerHTML = '<p style="color:var(--text-muted)">No data yet. Submit complaints to generate analytics.</p>'; }
+        else {
+            el.innerHTML = zList.slice(0, 10).map((z, i) => `
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:0.6rem 0;border-bottom:1px solid var(--border-glass);">
+                    <div>
+                        <span style="color:var(--accent-red);font-weight:700;">#${z.rank}</span>
+                        <span style="margin-left:0.5rem;">${z.ward_name.split(' - ')[1] || z.ward_name}</span>
+                    </div>
+                    <div style="display:flex;gap:0.8rem;font-size:0.85rem;">
+                        <span title="Complaints">${z.complaint_count} complaints</span>
+                        <span title="Priority Score" style="color:${z.priority_score > 5 ? 'var(--danger)' : 'var(--text-secondary)'}; font-weight:600;">${z.priority_score.toFixed(1)}</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Hotspot clusters
+        const hList = hotspots.hotspots || [];
+        const hEl = document.getElementById('hotspotClustersList');
+        if (!hList.length) { hEl.innerHTML = '<p style="color:var(--text-muted)">No clusters detected. Need more complaints for DBSCAN.</p>'; }
+        else {
+            hEl.innerHTML = '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1rem;">' +
+                hList.map(h => `
+                    <div class="glass-card" style="padding:1rem;border-left:3px solid ${h.severity_average >= 7 ? 'var(--danger)' : h.severity_average >= 5 ? '#f59e0b' : 'var(--success)'};">
+                        <div style="font-weight:700;margin-bottom:0.3rem;">Cluster #${h.cluster_id}</div>
+                        <div style="font-size:0.85rem;color:var(--text-secondary);">${h.ward_name || 'Unknown area'}</div>
+                        <div style="display:flex;gap:1rem;margin-top:0.5rem;font-size:0.8rem;">
+                            <span>${h.complaint_count} complaints</span>
+                            <span>Severity: ${h.severity_average.toFixed(1)}/10</span>
+                            <span>${h.unresolved_count} unresolved</span>
+                        </div>
+                        <div style="margin-top:0.3rem;font-size:0.8rem;">Score: <strong>${h.priority_score.toFixed(1)}</strong></div>
+                    </div>
+                `).join('') + '</div>';
+        }
+
+        // Category chart
+        const catCounts = {};
+        zList.forEach(z => { /* aggregate from ward data - simplified */ });
+        const catRes = await fetch('/api/analytics/severity/');
+        const catData = await catRes.json();
+        const cats = catData.category_severity || [];
+
+        destroyChart('chartCategoryDist');
+        if (cats.length) {
+            chartInstances['chartCategoryDist'] = new Chart(document.getElementById('chartCategoryDist'), {
+                type: 'doughnut',
+                data: {
+                    labels: cats.map(c => c.category),
+                    datasets: [{
+                        data: cats.map(c => c.count),
+                        backgroundColor: ['#f97316','#22c55e','#3b82f6','#facc15','#ef4444','#8b5cf6','#ec4899','#6b7280','#14b8a6']
+                    }]
+                },
+                options: { responsive: true, plugins: { legend: { position: 'bottom', labels: { color: '#a0a0b8' } } } }
+            });
+        }
+    } catch (e) { console.error('Hotspot load error:', e); }
+}
+
+/* ===== PERFORMANCE ===== */
+async function loadPerformance() {
+    try {
+        const res = await fetch('/api/government/performance/');
+        if (res.status === 401) return;
+        const data = await res.json();
+
+        document.getElementById('sResRate').textContent = (data.resolution_rate || 0) + '%';
+        document.getElementById('sAvgRes').textContent = (data.avg_response_hours || 0) + 'h';
+
+        const el = document.getElementById('perfMetrics');
+        el.innerHTML = `
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+                <div class="glass-card" style="padding:1rem;text-align:center;">
+                    <div style="font-size:1.8rem;font-weight:700;color:var(--accent-red);">${data.avg_response_hours || 0}h</div>
+                    <div style="font-size:0.8rem;color:var(--text-secondary);">Avg Response Time</div>
+                </div>
+                <div class="glass-card" style="padding:1rem;text-align:center;">
+                    <div style="font-size:1.8rem;font-weight:700;color:#22c55e;">${data.avg_resolution_days || 0}d</div>
+                    <div style="font-size:0.8rem;color:var(--text-secondary);">Avg Resolution Time</div>
+                </div>
+                <div class="glass-card" style="padding:1rem;text-align:center;">
+                    <div style="font-size:1.8rem;font-weight:700;color:#3b82f6;">${data.total_active || 0}</div>
+                    <div style="font-size:0.8rem;color:var(--text-secondary);">Active Complaints</div>
+                </div>
+                <div class="glass-card" style="padding:1rem;text-align:center;">
+                    <div style="font-size:1.8rem;font-weight:700;color:#22c55e;">${data.resolution_rate || 0}%</div>
+                    <div style="font-size:0.8rem;color:var(--text-secondary);">Resolution Rate</div>
+                </div>
+            </div>
+        `;
+
+        // Unresolved trend chart
+        const trend = data.unresolved_trend || [];
+        destroyChart('chartUnresolved');
+        if (trend.length) {
+            chartInstances['chartUnresolved'] = new Chart(document.getElementById('chartUnresolved'), {
+                type: 'line',
+                data: {
+                    labels: trend.map(t => t.date),
+                    datasets: [{ label: 'Unresolved', data: trend.map(t => t.count),
+                        borderColor: '#ef4444', backgroundColor: 'rgba(239,68,68,0.1)', fill: true, tension: 0.4 }]
+                },
+                options: { responsive: true, scales: { y: { beginAtZero: true, ticks: { color: '#a0a0b8' } }, x: { ticks: { color: '#a0a0b8' } } }, plugins: { legend: { labels: { color: '#a0a0b8' } } } }
+            });
+        }
+    } catch (e) { console.error('Performance load error:', e); }
+}
+
+/* ===== TRENDS ===== */
+async function loadTrends() {
+    try {
+        const days = document.getElementById('trendDays').value;
+        const res = await fetch(`/api/analytics/trends/?days=${days}`);
+        const data = await res.json();
+        const trends = data.trends || [];
+
+        destroyChart('chartTrends');
+        if (trends.length) {
+            chartInstances['chartTrends'] = new Chart(document.getElementById('chartTrends'), {
+                type: 'bar',
+                data: {
+                    labels: trends.map(t => t.label),
+                    datasets: [
+                        { label: 'New Complaints', data: trends.map(t => t.new_complaints), backgroundColor: 'rgba(220,20,60,0.7)' },
+                        { label: 'Resolved', data: trends.map(t => t.resolved), backgroundColor: 'rgba(34,197,94,0.7)' }
+                    ]
+                },
+                options: { responsive: true, scales: { y: { beginAtZero: true, ticks: { color: '#a0a0b8' } }, x: { ticks: { color: '#a0a0b8', maxRotation: 45 } } }, plugins: { legend: { labels: { color: '#a0a0b8' } } } }
+            });
+        }
+    } catch (e) { console.error('Trends load error:', e); }
+}
+
+/* ===== SEVERITY ===== */
+async function loadSeverity() {
+    try {
+        const res = await fetch('/api/analytics/severity/');
+        const data = await res.json();
+
+        document.getElementById('sCritical').textContent = data.total_critical || 0;
+
+        // Severity histogram
+        const hist = data.histogram || {};
+        destroyChart('chartSeverity');
+        chartInstances['chartSeverity'] = new Chart(document.getElementById('chartSeverity'), {
+            type: 'bar',
+            data: {
+                labels: Object.keys(hist).map(k => 'Sev ' + k),
+                datasets: [{ label: 'Count', data: Object.values(hist),
+                    backgroundColor: Object.keys(hist).map(k => parseInt(k) >= 8 ? '#ef4444' : parseInt(k) >= 5 ? '#f59e0b' : '#22c55e') }]
+            },
+            options: { responsive: true, scales: { y: { beginAtZero: true, ticks: { color: '#a0a0b8' } }, x: { ticks: { color: '#a0a0b8' } } }, plugins: { legend: { display: false } } }
+        });
+
+        // Critical zones
+        const zones = data.critical_zones || [];
+        const el = document.getElementById('criticalZones');
+        if (!zones.length) { el.innerHTML = '<p style="color:var(--text-muted)">No critical zones detected.</p>'; }
+        else {
+            el.innerHTML = zones.map(z => `
+                <div style="display:flex;justify-content:space-between;padding:0.5rem 0;border-bottom:1px solid var(--border-glass);">
+                    <span>${z.ward || 'Unassigned'}</span>
+                    <span style="color:var(--danger);font-weight:600;">${z.count} critical</span>
+                </div>
+            `).join('');
+        }
+
+        // Category severity chart
+        const cats = data.category_severity || [];
+        destroyChart('chartCatSeverity');
+        if (cats.length) {
+            chartInstances['chartCatSeverity'] = new Chart(document.getElementById('chartCatSeverity'), {
+                type: 'bar',
+                data: {
+                    labels: cats.map(c => c.category),
+                    datasets: [{ label: 'Avg Severity', data: cats.map(c => c.avg_severity),
+                        backgroundColor: 'rgba(220,20,60,0.6)', borderColor: '#DC143C', borderWidth: 1 }]
+                },
+                options: { indexAxis: 'y', responsive: true, scales: { x: { beginAtZero: true, max: 10, ticks: { color: '#a0a0b8' } }, y: { ticks: { color: '#a0a0b8' } } }, plugins: { legend: { display: false } } }
+            });
+        }
+    } catch (e) { console.error('Severity load error:', e); }
+}
+
+/* ===== WARDS ===== */
+async function loadWards() {
+    try {
+        const res = await fetch('/api/analytics/ward-stats/');
+        const data = await res.json();
+        const wards = data.wards || [];
+
+        const el = document.getElementById('wardTable');
+        if (!wards.length) { el.innerHTML = '<p style="color:var(--text-muted)">No ward data. Run seed_population first.</p>'; return; }
+
+        const rows = wards.filter(w => w.total_complaints > 0 || w.population > 0).slice(0, 30);
+        el.innerHTML = `<table class="data-table"><thead><tr>
+            <th>Ward</th><th>Population</th><th>Density</th><th>Complaints</th><th>Unresolved</th><th>Rate/1K</th><th>Avg Severity</th>
+        </tr></thead><tbody>` + rows.map(w => `<tr>
+            <td>${w.ward_name.split(' - ')[1] || w.ward_name}</td>
+            <td>${w.population.toLocaleString()}</td>
+            <td>${w.population_density.toFixed(0)}/km2</td>
+            <td>${w.total_complaints}</td>
+            <td style="color:${w.unresolved > 0 ? 'var(--danger)' : 'inherit'}">${w.unresolved}</td>
+            <td style="font-weight:600;color:${w.complaint_rate_per_1k > 1 ? 'var(--danger)' : 'var(--text-secondary)'}">${w.complaint_rate_per_1k}</td>
+            <td>${w.avg_severity}/10</td>
+        </tr>`).join('') + '</tbody></table>';
+    } catch (e) { console.error('Ward load error:', e); }
+}
+
+/* ===== REFRESH ===== */
+async function refreshAnalytics() {
+    try {
+        const res = await fetch('/api/analytics/refresh/', { method: 'POST', headers: { 'X-CSRFToken': getCookie('csrftoken') } });
+        if (res.status === 401) { window.location.href = '/login/'; return; }
+        const data = await res.json();
+        if (data.success) {
+            showToast('Analytics refreshed successfully!', 'success');
+            loadHotspots(); loadPerformance(); loadTrends(); loadSeverity(); loadWards();
+        }
+    } catch (e) { showToast('Failed to refresh analytics', 'error'); }
+}
+</script>
+{% endblock %}

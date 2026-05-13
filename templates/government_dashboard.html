@@ -1,0 +1,117 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Government Dashboard - AAWAJ{% endblock %}
+{% block content %}
+<div class="container" style="padding-top:2rem;padding-bottom:4rem;">
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem;margin-bottom:2rem;">
+        <div>
+            <h1 class="section-title" style="margin-bottom:0.3rem;">Government Dashboard</h1>
+            <p style="color:var(--text-secondary);">View and resolve verified citizen complaints</p>
+        </div>
+        <div style="display:flex;gap:0.5rem;">
+            <a href="/government/analytics/" class="btn btn-secondary btn-sm">Analytics</a>
+            <button class="btn btn-secondary btn-sm" onclick="exportCSV()">Export CSV</button>
+        </div>
+    </div>
+
+    <!-- Hotspot Alert Banner -->
+    <div id="hotspotAlert" style="display:none;margin-bottom:1.5rem;" class="glass-card" >
+        <div style="padding:1rem;border-left:3px solid var(--danger);display:flex;align-items:center;gap:1rem;">
+            <span style="font-size:1.5rem;">!</span>
+            <div>
+                <div style="font-weight:700;color:var(--danger);" id="alertTitle">Critical Hotspot Detected</div>
+                <div style="font-size:0.85rem;color:var(--text-secondary);" id="alertDesc"></div>
+            </div>
+            <a href="/government/analytics/" class="btn btn-secondary btn-sm" style="margin-left:auto;">View Analytics</a>
+        </div>
+    </div>
+
+    <div class="stats-grid" style="margin-bottom:2rem;">
+        <div class="stat-card glass-card"><div class="stat-number" id="gActive">0</div><div class="stat-label">Active Complaints</div></div>
+        <div class="stat-card glass-card"><div class="stat-number" id="gResolved">0</div><div class="stat-label">Resolved</div></div>
+        <div class="stat-card glass-card"><div class="stat-number" id="gCritical">0</div><div class="stat-label">Critical</div></div>
+        <div class="stat-card glass-card"><div class="stat-number" id="gHigh">0</div><div class="stat-label">High Priority</div></div>
+    </div>
+    <div class="filter-bar">
+        <select class="form-select" id="gCatFilter" onchange="loadGovComplaints()">
+            <option value="all">All Categories</option>
+            <option value="roads">Roads</option><option value="garbage">Garbage</option>
+            <option value="water">Water</option><option value="electricity">Electricity</option>
+            <option value="health">Health</option><option value="infrastructure">Infrastructure</option>
+        </select>
+        <select class="form-select" id="gPriorityFilter" onchange="loadGovComplaints()">
+            <option value="all">All Priority</option>
+            <option value="critical">Critical</option><option value="high">High</option>
+            <option value="medium">Medium</option><option value="low">Low</option>
+        </select>
+        <select class="form-select" id="gStatusFilter" onchange="loadGovComplaints()">
+            <option value="">All Status</option>
+            <option value="published">Active</option><option value="resolved">Resolved</option>
+        </select>
+        <input type="text" class="form-input" id="gSearch" placeholder="Search..." style="max-width:220px;margin-left:auto;" oninput="clearTimeout(window._gst);window._gst=setTimeout(loadGovComplaints,400)">
+    </div>
+    <div id="govComplaints"><div class="spinner"></div></div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', () => { loadGovComplaints(); loadHotspotAlert(); });
+
+function loadGovComplaints() {
+    const params = new URLSearchParams({
+        category: document.getElementById('gCatFilter').value,
+        priority: document.getElementById('gPriorityFilter').value,
+        status: document.getElementById('gStatusFilter').value,
+        search: document.getElementById('gSearch').value
+    });
+    fetch('/api/government/complaints/?' + params)
+        .then(r => { if (r.status===401) { window.location.href='/login/'; return; } return r.json(); })
+        .then(data => {
+            if (!data) return;
+            if (data.stats) {
+                document.getElementById('gActive').textContent = data.stats.total_active||0;
+                document.getElementById('gResolved').textContent = data.stats.resolved||0;
+                document.getElementById('gCritical').textContent = data.stats.critical||0;
+                document.getElementById('gHigh').textContent = data.stats.high_priority||0;
+            }
+            const items = data.complaints||[];
+            const el = document.getElementById('govComplaints');
+            if (!items.length) { el.innerHTML='<div class="glass-card" style="text-align:center;padding:3rem;color:var(--text-muted);">No complaints found.</div>'; return; }
+            el.innerHTML = `<table class="data-table"><thead><tr>
+                <th>Code</th><th>Category</th><th>Location</th><th>Priority</th><th>Severity</th><th>Status</th><th>Date</th><th>Action</th>
+            </tr></thead><tbody>` + items.map(c => `<tr>
+                <td><a href="/government/case/${c.id}/" style="color:var(--accent-red);text-decoration:none;font-family:monospace;font-weight:600;">${c.complaint_code}</a></td>
+                <td>${categoryBadge(c.category)}</td>
+                <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${c.location_text||'N/A'}</td>
+                <td>${priorityBadge(c.priority)}</td>
+                <td>${c.ai_severity_score}/10 ${c.ai_urgency?'!':''}</td>
+                <td>${statusBadge(c.status)}</td>
+                <td>${timeAgo(c.created_at)}</td>
+                <td><a href="/government/case/${c.id}/" class="btn btn-secondary btn-sm">View</a></td>
+            </tr>`).join('') + '</tbody></table>';
+        }).catch(()=>{ document.getElementById('govComplaints').innerHTML='<p style="color:var(--danger);">Error loading.</p>'; });
+}
+
+async function loadHotspotAlert() {
+    try {
+        const res = await fetch('/api/hotspots/?limit=1');
+        const data = await res.json();
+        const hotspots = data.hotspots || [];
+        if (hotspots.length && hotspots[0].severity_average >= 6) {
+            const h = hotspots[0];
+            document.getElementById('hotspotAlert').style.display = 'block';
+            document.getElementById('alertTitle').textContent = `Critical Hotspot: ${h.ward_name || 'Zone #' + h.cluster_id}`;
+            document.getElementById('alertDesc').textContent = `${h.complaint_count} complaints, severity ${h.severity_average.toFixed(1)}/10, ${h.unresolved_count} unresolved`;
+        }
+    } catch(e) {}
+}
+
+function exportCSV() {
+    const params = new URLSearchParams({
+        category: document.getElementById('gCatFilter').value,
+        priority: document.getElementById('gPriorityFilter').value,
+    });
+    window.location.href = '/api/government/export/csv/?' + params;
+}
+</script>
+{% endblock %}

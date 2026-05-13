@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+{% block title %}Track Complaint - AAWAJ{% endblock %}
+{% block content %}
+<div class="container" style="padding-top:3rem;padding-bottom:4rem;">
+    <h1 class="section-title" style="text-align:center;">Track Your Complaint</h1>
+    <p class="section-subtitle" style="text-align:center;">Enter your complaint code to check the current status</p>
+    <div class="glass-card" style="max-width:600px;margin:0 auto;">
+        <div class="form-group">
+            <label class="form-label">Complaint Code</label>
+            <div style="display:flex;gap:1rem;">
+                <input type="text" class="form-input" id="trackCode" placeholder="e.g. AAW-A1B2C3" style="text-transform:uppercase;font-family:monospace;font-size:1.1rem;">
+                <button class="btn btn-primary" onclick="trackComplaint()" id="trackBtn">Track</button>
+            </div>
+        </div>
+        <div id="trackResult" style="display:none;margin-top:2rem;"></div>
+        <div id="trackError" style="display:none;margin-top:1rem;color:var(--danger);text-align:center;"></div>
+    </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const params = new URLSearchParams(window.location.search);
+    const code = params.get('code');
+    if (code) { document.getElementById('trackCode').value = code; trackComplaint(); }
+    document.getElementById('trackCode').addEventListener('keypress', e => { if (e.key === 'Enter') trackComplaint(); });
+});
+
+async function trackComplaint() {
+    const code = document.getElementById('trackCode').value.trim().toUpperCase();
+    if (!code) return;
+    const btn = document.getElementById('trackBtn');
+    btn.disabled = true; btn.textContent = '...';
+    document.getElementById('trackError').style.display = 'none';
+
+    try {
+        const res = await fetch('/api/complaints/' + code + '/status/');
+        if (!res.ok) throw new Error('Not found');
+        const c = await res.json();
+        const result = document.getElementById('trackResult');
+        const img = (c.images && c.images.length) ? `<img src="${c.images[0].image_url}" style="width:100%;max-height:300px;object-fit:cover;border-radius:12px;margin-bottom:1.5rem;">` : '';
+        result.innerHTML = `
+            ${img}
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;flex-wrap:wrap;gap:0.5rem;">
+                <span style="font-family:monospace;font-size:1.2rem;color:var(--accent-red);font-weight:700;">${c.complaint_code}</span>
+                <div style="display:flex;gap:0.5rem;">${statusBadge(c.status)} ${categoryBadge(c.category)} ${priorityBadge(c.priority)}</div>
+            </div>
+            <p style="margin-bottom:1rem;">${c.description || 'No description'}</p>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.5rem;">
+                <div class="stat-card" style="padding:1rem;"><div style="color:var(--text-muted);font-size:0.8rem;">Location</div><div style="font-size:0.9rem;margin-top:0.3rem;">📍 ${c.location_text}</div></div>
+                <div class="stat-card" style="padding:1rem;"><div style="color:var(--text-muted);font-size:0.8rem;">AI Confidence</div><div style="font-size:0.9rem;margin-top:0.3rem;">${Math.round(c.ai_confidence_score * 100)}% — ${c.ai_verdict}</div></div>
+                <div class="stat-card" style="padding:1rem;"><div style="color:var(--text-muted);font-size:0.8rem;">Severity</div><div style="font-size:0.9rem;margin-top:0.3rem;">${c.ai_severity_score}/10 ${c.ai_urgency ? '⚡ URGENT' : ''}</div></div>
+                <div class="stat-card" style="padding:1rem;"><div style="color:var(--text-muted);font-size:0.8rem;">Submitted</div><div style="font-size:0.9rem;margin-top:0.3rem;">${formatDate(c.created_at)}</div></div>
+            </div>
+            ${buildTimeline(c)}
+        `;
+        result.style.display = 'block';
+    } catch (err) {
+        document.getElementById('trackError').textContent = 'Complaint not found. Please check the code and try again.';
+        document.getElementById('trackError').style.display = 'block';
+        document.getElementById('trackResult').style.display = 'none';
+    }
+    btn.disabled = false; btn.textContent = 'Track';
+}
+
+function buildTimeline(c) {
+    let items = [{status:'Submitted',date:c.created_at,type:'success'}];
+    if (c.ai_verdict) items.push({status:`AI Analysis: ${c.ai_verdict} confidence`,date:c.created_at,type:c.ai_verdict==='high'?'success':'warning'});
+    if (c.moderation_logs) c.moderation_logs.forEach(m => items.push({status:`Moderator: ${m.action}${m.notes?' — '+m.notes:''}`,date:m.created_at,type:m.action==='approve'?'success':'warning'}));
+    if (c.government_actions) c.government_actions.forEach(g => items.push({status:`Government: ${g.action_type}${g.notes?' — '+g.notes:''}`,date:g.created_at,type:'success'}));
+    if (c.status === 'resolved') items.push({status:'✅ Resolved',date:c.updated_at,type:'success'});
+
+    let html = '<h3 style="margin-bottom:1rem;">Status Timeline</h3><div class="timeline">';
+    items.forEach(item => {
+        html += `<div class="timeline-item"><div class="timeline-dot ${item.type}"></div><div class="timeline-content"><strong>${item.status}</strong><div class="timeline-date">${formatDate(item.date)}</div></div></div>`;
+    });
+    return html + '</div>';
+}
+</script>
+{% endblock %}

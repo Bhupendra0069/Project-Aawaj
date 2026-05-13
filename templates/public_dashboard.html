@@ -1,0 +1,139 @@
+{% extends 'base.html' %}
+{% block title %}Public Dashboard - AAWAJ{% endblock %}
+{% block content %}
+<div class="container" style="padding-top:2rem;padding-bottom:4rem;">
+    <h1 class="section-title">Public Dashboard</h1>
+    <p class="section-subtitle">Verified civic complaints from Kathmandu Valley</p>
+
+    <div class="stats-grid" style="margin-bottom:2rem;" id="dashStats">
+        <div class="stat-card glass-card"><div class="stat-number" id="dTotal">-</div><div class="stat-label">Total</div></div>
+        <div class="stat-card glass-card"><div class="stat-number" id="dPublished">-</div><div class="stat-label">Active</div></div>
+        <div class="stat-card glass-card"><div class="stat-number" id="dResolved">-</div><div class="stat-label">Resolved</div></div>
+        <div class="stat-card glass-card"><div class="stat-number" id="dPending">-</div><div class="stat-label">Under Review</div></div>
+    </div>
+
+    <!-- Transparency Section -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-bottom:2rem;">
+        <div class="glass-card" style="padding:1.2rem;">
+            <h3 style="margin-bottom:0.8rem;font-size:1rem;color:var(--text-primary);">Top Unresolved Areas</h3>
+            <div id="topUnresolved" style="font-size:0.85rem;">Loading...</div>
+        </div>
+        <div class="glass-card" style="padding:1.2rem;">
+            <h3 style="margin-bottom:0.8rem;font-size:1rem;color:var(--text-primary);">Resolution Progress</h3>
+            <div id="resolutionProgress">Loading...</div>
+        </div>
+    </div>
+
+    <div class="filter-bar">
+        <button class="filter-chip active" onclick="filterCategory('all',this)">All</button>
+        <button class="filter-chip" onclick="filterCategory('roads',this)">Roads</button>
+        <button class="filter-chip" onclick="filterCategory('garbage',this)">Garbage</button>
+        <button class="filter-chip" onclick="filterCategory('water',this)">Water</button>
+        <button class="filter-chip" onclick="filterCategory('electricity',this)">Electric</button>
+        <button class="filter-chip" onclick="filterCategory('health',this)">Health</button>
+        <button class="filter-chip" onclick="filterCategory('infrastructure',this)">Infra</button>
+        <input type="text" class="form-input" id="searchInput" placeholder="Search complaints..." style="max-width:250px;margin-left:auto;">
+    </div>
+    <div class="complaints-grid" id="complaintsGrid"><div class="spinner"></div></div>
+    <p id="noResults" style="display:none;text-align:center;color:var(--text-muted);padding:3rem;">No complaints found.</p>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let currentCategory = 'all';
+document.addEventListener('DOMContentLoaded', () => {
+    loadStats(); loadComplaints(); loadTransparency();
+    let st; document.getElementById('searchInput').addEventListener('input', () => { clearTimeout(st); st = setTimeout(loadComplaints, 400); });
+});
+
+function loadStats() {
+    fetch('/api/dashboard/stats/').then(r=>r.json()).then(d => {
+        animateNumber(document.getElementById('dTotal'), d.total||0);
+        animateNumber(document.getElementById('dPublished'), d.published||0);
+        animateNumber(document.getElementById('dResolved'), d.resolved||0);
+        animateNumber(document.getElementById('dPending'), d.pending||0);
+    }).catch(()=>{});
+}
+
+function filterCategory(cat, el) {
+    currentCategory = cat;
+    document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+    if (el) el.classList.add('active');
+    loadComplaints();
+}
+
+function loadComplaints() {
+    const search = document.getElementById('searchInput').value;
+    const params = new URLSearchParams({ category: currentCategory, search: search });
+    fetch('/api/complaints/public/?' + params).then(r=>r.json()).then(data => {
+        const grid = document.getElementById('complaintsGrid');
+        const items = data.complaints || [];
+        document.getElementById('noResults').style.display = items.length ? 'none' : 'block';
+        grid.innerHTML = items.map(c => complaintCardHTML(c)).join('');
+    }).catch(() => {
+        document.getElementById('complaintsGrid').innerHTML = '<p style="color:var(--text-muted);text-align:center;grid-column:1/-1;">Error loading complaints.</p>';
+    });
+}
+
+function showComplaintDetail(code) { window.location.href = '/track/?code=' + code; }
+
+async function loadTransparency() {
+    try {
+        // Top unresolved areas
+        const wardRes = await fetch('/api/analytics/ward-stats/');
+        const wardData = await wardRes.json();
+        const wards = (wardData.wards || []).filter(w => w.unresolved > 0).slice(0, 5);
+        const unresolvedEl = document.getElementById('topUnresolved');
+        if (wards.length) {
+            unresolvedEl.innerHTML = wards.map((w, i) => `
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:0.4rem 0;border-bottom:1px solid var(--border-glass);">
+                    <div>
+                        <span style="color:var(--accent-red);font-weight:700;">#${i+1}</span>
+                        <span style="margin-left:0.4rem;">${w.ward_name.split(' - ')[1] || w.ward_name}</span>
+                    </div>
+                    <div style="display:flex;gap:0.6rem;">
+                        <span style="color:var(--danger);">${w.unresolved} unresolved</span>
+                        <span style="color:var(--text-muted);">${w.complaint_rate_per_1k}/1K pop</span>
+                    </div>
+                </div>
+            `).join('');
+        } else {
+            unresolvedEl.innerHTML = '<p style="color:var(--text-muted);">No unresolved areas found.</p>';
+        }
+
+        // Resolution progress
+        const statsRes = await fetch('/api/dashboard/stats/');
+        const stats = await statsRes.json();
+        const total = (stats.published || 0) + (stats.resolved || 0);
+        const resolved = stats.resolved || 0;
+        const pct = total > 0 ? Math.round(resolved / total * 100) : 0;
+
+        document.getElementById('resolutionProgress').innerHTML = `
+            <div style="margin-bottom:1rem;">
+                <div style="display:flex;justify-content:space-between;margin-bottom:0.3rem;">
+                    <span>Overall Resolution</span>
+                    <span style="font-weight:700;color:${pct >= 50 ? '#22c55e' : 'var(--danger)'};">${pct}%</span>
+                </div>
+                <div style="width:100%;height:8px;background:var(--bg-primary);border-radius:4px;overflow:hidden;">
+                    <div style="width:${pct}%;height:100%;background:linear-gradient(90deg,var(--accent-red),#22c55e);border-radius:4px;transition:width 1s;"></div>
+                </div>
+                <div style="display:flex;justify-content:space-between;margin-top:0.5rem;font-size:0.8rem;color:var(--text-muted);">
+                    <span>${resolved} resolved</span>
+                    <span>${stats.published || 0} active</span>
+                    <span>${stats.pending || 0} reviewing</span>
+                </div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem;">
+                ${(stats.category_stats || []).slice(0,4).map(cs => `
+                    <div style="padding:0.4rem;background:rgba(255,255,255,0.03);border-radius:6px;text-align:center;">
+                        <div style="font-weight:600;">${cs.count}</div>
+                        <div style="font-size:0.75rem;color:var(--text-muted);">${cs.category}</div>
+                    </div>
+                `).join('')}
+            </div>
+        `;
+    } catch(e) { console.error('Transparency load error:', e); }
+}
+</script>
+{% endblock %}

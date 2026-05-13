@@ -1,0 +1,139 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}AAWAJ - Voice of the People | Kathmandu Valley{% endblock %}
+{% block content %}
+<!-- Hero -->
+<section class="hero">
+    <div class="container">
+        <div class="hero-content slide-up">
+            <div class="hero-badge">🇳🇵 Built for Kathmandu Valley</div>
+            <h1 class="hero-title">Your City.<br>Your <span>Voice.</span><br>Your <span>AAWAJ.</span></h1>
+            <p class="hero-desc">Report civic issues like potholes, garbage, water leaks, and more. Our AI system analyzes your complaint and forwards it directly to the government.</p>
+            <div class="hero-actions">
+                <a href="/report/" class="btn btn-primary btn-lg">🎙️ Report an Issue</a>
+                <a href="/dashboard/" class="btn btn-secondary btn-lg">📊 View Dashboard</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Stats -->
+<section class="section" style="padding-top:2rem;">
+    <div class="container">
+        <div class="stats-grid" id="homeStats">
+            <div class="stat-card glass-card"><div class="stat-number" data-target="0" id="statTotal">0</div><div class="stat-label">Total Complaints</div></div>
+            <div class="stat-card glass-card"><div class="stat-number" data-target="0" id="statPublished">0</div><div class="stat-label">Published</div></div>
+            <div class="stat-card glass-card"><div class="stat-number" data-target="0" id="statResolved">0</div><div class="stat-label">Resolved</div></div>
+            <div class="stat-card glass-card"><div class="stat-number" data-target="0" id="statPending">0</div><div class="stat-label">Under Review</div></div>
+        </div>
+    </div>
+</section>
+
+<!-- How It Works -->
+<section class="section">
+    <div class="container">
+        <h2 class="section-title">How AAWAJ Works</h2>
+        <p class="section-subtitle">Four simple steps to make your voice heard</p>
+        <div class="steps-grid">
+            <div class="glass-card step-card fade-in">
+                <div class="step-icon">📸</div>
+                <div class="step-num">STEP 01</div>
+                <div class="step-title">Capture Evidence</div>
+                <div class="step-desc">Take a photo of the issue — pothole, garbage pile, broken pipe, or any public problem.</div>
+            </div>
+            <div class="glass-card step-card fade-in" style="animation-delay:0.1s">
+                <div class="step-icon">📍</div>
+                <div class="step-num">STEP 02</div>
+                <div class="step-title">Add Location</div>
+                <div class="step-desc">Search or pin the exact location on the map so authorities know where to act.</div>
+            </div>
+            <div class="glass-card step-card fade-in" style="animation-delay:0.2s">
+                <div class="step-icon">🤖</div>
+                <div class="step-num">STEP 03</div>
+                <div class="step-title">AI Analyzes</div>
+                <div class="step-desc">Our AI classifies the issue, detects urgency, and generates a structured report automatically.</div>
+            </div>
+            <div class="glass-card step-card fade-in" style="animation-delay:0.3s">
+                <div class="step-icon">🏛️</div>
+                <div class="step-num">STEP 04</div>
+                <div class="step-title">Government Acts</div>
+                <div class="step-desc">Verified complaints reach the relevant government department for resolution.</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Recent Complaints -->
+<section class="section" style="background:var(--bg-secondary);padding:4rem 0;">
+    <div class="container">
+        <h2 class="section-title">Recent Complaints</h2>
+        <p class="section-subtitle">Latest issues reported by citizens of Kathmandu Valley</p>
+        <div class="complaints-grid" id="recentComplaints"><div class="spinner"></div></div>
+        <div style="text-align:center;margin-top:2rem;">
+            <a href="/dashboard/" class="btn btn-secondary">View All Complaints →</a>
+        </div>
+    </div>
+</section>
+
+<!-- Categories -->
+<section class="section">
+    <div class="container">
+        <h2 class="section-title">What Can You Report?</h2>
+        <p class="section-subtitle">AAWAJ covers all major civic issues in Kathmandu Valley</p>
+        <div class="steps-grid" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr));">
+            <div class="glass-card step-card"><div class="step-icon">🛣️</div><div class="step-title">Roads & Potholes</div></div>
+            <div class="glass-card step-card"><div class="step-icon">🗑️</div><div class="step-title">Garbage & Waste</div></div>
+            <div class="glass-card step-card"><div class="step-icon">💧</div><div class="step-title">Water & Drainage</div></div>
+            <div class="glass-card step-card"><div class="step-icon">⚡</div><div class="step-title">Electricity</div></div>
+            <div class="glass-card step-card"><div class="step-icon">🏥</div><div class="step-title">Health Hazards</div></div>
+            <div class="glass-card step-card"><div class="step-icon">🏫</div><div class="step-title">Education</div></div>
+            <div class="glass-card step-card"><div class="step-icon">⚖️</div><div class="step-title">Corruption</div></div>
+            <div class="glass-card step-card"><div class="step-icon">🏗️</div><div class="step-title">Infrastructure</div></div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA -->
+<section class="section" style="text-align:center;padding:5rem 0;">
+    <div class="container">
+        <h2 style="font-size:2.5rem;font-weight:900;margin-bottom:1rem;">Ready to raise your <span style="background:var(--gradient-hero);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">AAWAJ</span>?</h2>
+        <p style="color:var(--text-secondary);font-size:1.1rem;margin-bottom:2rem;">Your complaint can change your neighborhood. Start now — it takes less than 2 minutes.</p>
+        <a href="/report/" class="btn btn-primary btn-lg">🎙️ Report an Issue Now</a>
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    // Load stats
+    fetch('/api/dashboard/stats/')
+        .then(r => r.json())
+        .then(data => {
+            animateNumber(document.getElementById('statTotal'), data.total || 0);
+            animateNumber(document.getElementById('statPublished'), data.published || 0);
+            animateNumber(document.getElementById('statResolved'), data.resolved || 0);
+            animateNumber(document.getElementById('statPending'), data.pending || 0);
+        }).catch(() => {});
+
+    // Load recent complaints
+    fetch('/api/complaints/public/?sort=-created_at')
+        .then(r => r.json())
+        .then(data => {
+            const grid = document.getElementById('recentComplaints');
+            const items = (data.complaints || []).slice(0, 6);
+            if (items.length === 0) {
+                grid.innerHTML = '<p style="color:var(--text-muted);text-align:center;grid-column:1/-1;padding:3rem;">No complaints yet. Be the first to report an issue!</p>';
+                return;
+            }
+            grid.innerHTML = items.map(c => complaintCardHTML(c)).join('');
+        }).catch(() => {
+            document.getElementById('recentComplaints').innerHTML = '<p style="color:var(--text-muted);text-align:center;grid-column:1/-1;">Could not load complaints.</p>';
+        });
+});
+
+function showComplaintDetail(code) {
+    window.location.href = '/track/?code=' + code;
+}
+</script>
+{% endblock %}

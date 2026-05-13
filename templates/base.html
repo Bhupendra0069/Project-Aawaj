@@ -1,0 +1,90 @@
+{% load static %}<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}AAWAJ - Voice of the People{% endblock %}</title>
+    <meta name="description" content="{% block meta_desc %}AAWAJ - AI-powered civic complaint platform for Kathmandu Valley, Nepal. Report public issues and make your voice heard.{% endblock %}">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎙️</text></svg>">
+    {% block head %}{% endblock %}
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar" id="navbar">
+        <a href="/" class="nav-brand">
+            <span class="nav-brand-icon">🎙️</span>
+            <span class="nav-brand-text">AAWAJ</span>
+        </a>
+        <button class="nav-toggle" id="navToggle" aria-label="Menu">☰</button>
+        <ul class="nav-links" id="navLinks">
+            <li><a href="/" {% if request.path == '/' %}class="active"{% endif %}>Home</a></li>
+            <li><a href="/dashboard/" {% if request.path == '/dashboard/' %}class="active"{% endif %}>Dashboard</a></li>
+            <li><a href="/map/" {% if request.path == '/map/' %}class="active"{% endif %}>Map</a></li>
+            <li><a href="/track/" {% if request.path == '/track/' %}class="active"{% endif %}>Track</a></li>
+            <li><a href="/about/" {% if request.path == '/about/' %}class="active"{% endif %}>About</a></li>
+            <li><a href="/contact/" {% if request.path == '/contact/' %}class="active"{% endif %}>Contact</a></li>
+            {% if user.is_authenticated %}
+            <li><a href="/moderation/" {% if 'moderation' in request.path %}class="active"{% endif %}>Moderation</a></li>
+            <li><a href="/government/" {% if request.path == '/government/' %}class="active"{% endif %}>Government</a></li>
+            <li><a href="/government/analytics/" {% if 'analytics' in request.path %}class="active"{% endif %}>Analytics</a></li>
+            <li><a href="/logout/" style="color:var(--danger)">Logout</a></li>
+            {% else %}
+            <li><a href="/login/">Login</a></li>
+            {% endif %}
+            <li><a href="/report/" class="nav-cta">🎙️ Report Issue</a></li>
+        </ul>
+    </nav>
+
+    <main class="page-content">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    {% block footer %}
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div>
+                    <div class="footer-brand">🎙️ AAWAJ</div>
+                    <p class="footer-desc">Digital voice of the people. AI-powered civic complaint platform for Kathmandu Valley, Nepal.</p>
+                </div>
+                <div>
+                    <div class="footer-title">Quick Links</div>
+                    <ul class="footer-links">
+                        <li><a href="/report/">Report Issue</a></li>
+                        <li><a href="/dashboard/">Public Dashboard</a></li>
+                        <li><a href="/track/">Track Complaint</a></li>
+                        <li><a href="/map/">Complaint Map</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <div class="footer-title">Platform</div>
+                    <ul class="footer-links">
+                        <li><a href="/about/">About AAWAJ</a></li>
+                        <li><a href="/contact/">Contact Us</a></li>
+                        <li><a href="/login/">Admin Login</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <div class="footer-title">Contact</div>
+                    <ul class="footer-links">
+                        <li>📍 Kathmandu, Nepal</li>
+                        <li>📧 info@aawaj.org.np</li>
+                        <li>📞 +977-1-XXXXXXX</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                🇳🇵 AAWAJ © 2025 — Built for Kathmandu. Powered by People. Driven by Technology.
+            </div>
+        </div>
+    </footer>
+    {% endblock %}
+
+    <script src="{% static 'js/main.js' %}"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

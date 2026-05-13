@@ -1,0 +1,1 @@
+# AAWAJ Django Project

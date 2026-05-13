@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Case Detail - AAWAJ Government{% endblock %}
+{% block content %}
+<div class="container" style="padding-top:2rem;padding-bottom:4rem;">
+    <a href="/government/" style="color:var(--text-secondary);text-decoration:none;font-size:0.9rem;">← Back to Dashboard</a>
+    <div id="caseContent" style="margin-top:1.5rem;"><div class="spinner"></div></div>
+</div>
+
+<!-- Action Modal -->
+<div class="modal-overlay" id="actionModal">
+    <div class="modal">
+        <div class="modal-header"><h2>Take Action</h2><button class="modal-close" onclick="document.getElementById('actionModal').classList.remove('active')">✕</button></div>
+        <div class="form-group">
+            <label class="form-label">Action Type</label>
+            <select class="form-select" id="actionType">
+                <option value="acknowledged">Acknowledged</option>
+                <option value="in_progress">In Progress</option>
+                <option value="resolved">Resolved</option>
+                <option value="referred">Referred to Department</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label class="form-label">Department</label>
+            <input type="text" class="form-input" id="actionDept" placeholder="e.g. Department of Roads">
+        </div>
+        <div class="form-group">
+            <label class="form-label">Notes</label>
+            <textarea class="form-textarea" id="actionNotes" placeholder="Action details..."></textarea>
+        </div>
+        <button class="btn btn-primary" onclick="submitAction()" id="actionBtn">Submit Action</button>
+    </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+const complaintId = {{ complaint_id }};
+document.addEventListener('DOMContentLoaded', loadCase);
+
+function loadCase() {
+    fetch('/api/government/' + complaintId + '/detail/')
+        .then(r => { if(r.status===401){window.location.href='/login/';return;} return r.json(); })
+        .then(c => {
+            if(!c)return;
+            let imgs = (c.images||[]).map(i=>`<img src="${i.image_url}" style="max-width:100%;border-radius:12px;">`).join('');
+            let actions = (c.government_actions||[]).map(a=>`<div class="timeline-item"><div class="timeline-dot ${a.action_type==='resolved'?'success':''}"></div><div class="timeline-content"><strong>${a.action_type.toUpperCase()}</strong>${a.notes?' — '+a.notes:''}<br><small style="color:var(--text-muted);">${a.officer_name||'Officer'} | ${a.department||''} | ${formatDate(a.created_at)}</small></div></div>`).join('');
+            document.getElementById('caseContent').innerHTML = `
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:2rem;">
+                    <div>
+                        <div class="glass-card">
+                            ${imgs||'<div style="padding:3rem;text-align:center;color:var(--text-muted);">No images</div>'}
+                            ${c.audio_files&&c.audio_files.length?'<audio controls src="'+c.audio_files[0].audio_url+'" style="width:100%;margin-top:1rem;"></audio>':''}
+                        </div>
+                    </div>
+                    <div>
+                        <div class="glass-card" style="margin-bottom:1.5rem;">
+                            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;flex-wrap:wrap;gap:0.5rem;">
+                                <span style="font-family:monospace;font-size:1.3rem;color:var(--accent-red);font-weight:700;">${c.complaint_code}</span>
+                                <div style="display:flex;gap:0.5rem;">${categoryBadge(c.category)} ${priorityBadge(c.priority)} ${statusBadge(c.status)}</div>
+                            </div>
+                            <p style="margin-bottom:1rem;">${c.description||'No description'}</p>
+                            <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.8rem;font-size:0.9rem;">
+                                <div><span style="color:var(--text-muted);">📍 Location</span><br>${c.location_text}</div>
+                                <div><span style="color:var(--text-muted);">🤖 AI Verdict</span><br>${c.ai_verdict} (${Math.round(c.ai_confidence_score*100)}%)</div>
+                                <div><span style="color:var(--text-muted);">⚠️ Severity</span><br>${c.ai_severity_score}/10 ${c.ai_urgency?'⚡ URGENT':''}</div>
+                                <div><span style="color:var(--text-muted);">📅 Date</span><br>${formatDate(c.created_at)}</div>
+                            </div>
+                        </div>
+                        ${c.status!=='resolved'?'<button class="btn btn-primary" onclick="document.getElementById(\'actionModal\').classList.add(\'active\')" style="margin-bottom:1.5rem;margin-right:0.5rem;">🏛️ Take Action</button>':''}
+                        <a href="/api/government/${complaintId}/report/download/" class="btn btn-secondary" style="margin-bottom:1.5rem;">📄 Download Report</a>
+                        <div class="glass-card">
+                            <h3 style="margin-bottom:1rem;">AI Generated Report</h3>
+                            <pre style="white-space:pre-wrap;font-size:0.85rem;color:var(--text-secondary);line-height:1.6;font-family:Inter,sans-serif;">${c.ai_generated_report||'No report generated.'}</pre>
+                        </div>
+                        ${actions?'<div class="glass-card" style="margin-top:1.5rem;"><h3 style="margin-bottom:1rem;">Action History</h3><div class="timeline">'+actions+'</div></div>':''}
+                    </div>
+                </div>`;
+        }).catch(()=>{ document.getElementById('caseContent').innerHTML='<p style="color:var(--danger);">Error loading case.</p>'; });
+}
+
+async function submitAction() {
+    const btn = document.getElementById('actionBtn');
+    btn.disabled=true; btn.textContent='Submitting...';
+    try {
+        const res = await fetch('/api/government/'+complaintId+'/action/', {
+            method:'POST', headers:{'Content-Type':'application/json','X-CSRFToken':getCookie('csrftoken')},
+            body: JSON.stringify({
+                action_type: document.getElementById('actionType').value,
+                department: document.getElementById('actionDept').value,
+                notes: document.getElementById('actionNotes').value
+            })
+        });
+        const data = await res.json();
+        if(data.success) { showToast(data.message,'success'); document.getElementById('actionModal').classList.remove('active'); loadCase(); }
+        else showToast(data.error||'Failed','error');
+    } catch(e) { showToast('Network error','error'); }
+    btn.disabled=false; btn.textContent='Submit Action';
+}
+</script>
+{% endblock %}
