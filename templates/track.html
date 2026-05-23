@@ -47,9 +47,9 @@ async function trackComplaint() {
             </div>
             <p style="margin-bottom:1rem;">${c.description || 'No description'}</p>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.5rem;">
-                <div class="stat-card" style="padding:1rem;"><div style="color:var(--text-muted);font-size:0.8rem;">Location</div><div style="font-size:0.9rem;margin-top:0.3rem;">📍 ${c.location_text}</div></div>
+                <div class="stat-card" style="padding:1rem;"><div style="color:var(--text-muted);font-size:0.8rem;">Location</div><div style="font-size:0.9rem;margin-top:0.3rem;">${c.location_text}</div></div>
                 <div class="stat-card" style="padding:1rem;"><div style="color:var(--text-muted);font-size:0.8rem;">AI Confidence</div><div style="font-size:0.9rem;margin-top:0.3rem;">${Math.round(c.ai_confidence_score * 100)}% — ${c.ai_verdict}</div></div>
-                <div class="stat-card" style="padding:1rem;"><div style="color:var(--text-muted);font-size:0.8rem;">Severity</div><div style="font-size:0.9rem;margin-top:0.3rem;">${c.ai_severity_score}/10 ${c.ai_urgency ? '⚡ URGENT' : ''}</div></div>
+                <div class="stat-card" style="padding:1rem;"><div style="color:var(--text-muted);font-size:0.8rem;">Severity</div><div style="font-size:0.9rem;margin-top:0.3rem;">${c.ai_severity_score}/10 ${c.ai_urgency ? 'URGENT' : ''}</div></div>
                 <div class="stat-card" style="padding:1rem;"><div style="color:var(--text-muted);font-size:0.8rem;">Submitted</div><div style="font-size:0.9rem;margin-top:0.3rem;">${formatDate(c.created_at)}</div></div>
             </div>
             ${buildTimeline(c)}
@@ -68,7 +68,7 @@ function buildTimeline(c) {
     if (c.ai_verdict) items.push({status:`AI Analysis: ${c.ai_verdict} confidence`,date:c.created_at,type:c.ai_verdict==='high'?'success':'warning'});
     if (c.moderation_logs) c.moderation_logs.forEach(m => items.push({status:`Moderator: ${m.action}${m.notes?' — '+m.notes:''}`,date:m.created_at,type:m.action==='approve'?'success':'warning'}));
     if (c.government_actions) c.government_actions.forEach(g => items.push({status:`Government: ${g.action_type}${g.notes?' — '+g.notes:''}`,date:g.created_at,type:'success'}));
-    if (c.status === 'resolved') items.push({status:'✅ Resolved',date:c.updated_at,type:'success'});
+    if (c.status === 'resolved') items.push({status:'Resolved',date:c.updated_at,type:'success'});
 
     let html = '<h3 style="margin-bottom:1rem;">Status Timeline</h3><div class="timeline">';
     items.forEach(item => {

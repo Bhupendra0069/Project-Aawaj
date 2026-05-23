@@ -60,10 +60,10 @@ function loadCase() {
                             </div>
                             <p style="margin-bottom:1rem;">${c.description||'No description'}</p>
                             <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.8rem;font-size:0.9rem;">
-                                <div><span style="color:var(--text-muted);">📍 Location</span><br>${c.location_text}</div>
+                                <div><span style="color:var(--text-muted);">Location</span><br>${c.location_text}</div>
                                 <div><span style="color:var(--text-muted);">🤖 AI Verdict</span><br>${c.ai_verdict} (${Math.round(c.ai_confidence_score*100)}%)</div>
-                                <div><span style="color:var(--text-muted);">⚠️ Severity</span><br>${c.ai_severity_score}/10 ${c.ai_urgency?'⚡ URGENT':''}</div>
-                                <div><span style="color:var(--text-muted);">📅 Date</span><br>${formatDate(c.created_at)}</div>
+                                <div><span style="color:var(--text-muted);">Severity</span><br>${c.ai_severity_score}/10 ${c.ai_urgency?'URGENT':''}</div>
+                                <div><span style="color:var(--text-muted);">Date</span><br>${formatDate(c.created_at)}</div>
                             </div>
                         </div>
                         ${c.status!=='resolved'?'<button class="btn btn-primary" onclick="document.getElementById(\'actionModal\').classList.add(\'active\')" style="margin-bottom:1.5rem;margin-right:0.5rem;">🏛️ Take Action</button>':''}

@@ -4,14 +4,31 @@
 {% block content %}
 <!-- Hero -->
 <section class="hero">
-    <div class="container">
-        <div class="hero-content slide-up">
-            <div class="hero-badge">🇳🇵 Built for Kathmandu Valley</div>
-            <h1 class="hero-title">Your City.<br>Your <span>Voice.</span><br>Your <span>AAWAJ.</span></h1>
-            <p class="hero-desc">Report civic issues like potholes, garbage, water leaks, and more. Our AI system analyzes your complaint and forwards it directly to the government.</p>
+    <div class="container hero-grid">
+        <div class="hero-copy slide-up">
+            <div class="hero-label">Built for Kathmandu Valley</div>
+            <h1 class="hero-title">Your City.<br>Your <span>Voice</span>.<br>Your AAWAJ.</h1>
+            <p class="hero-desc">Report civic issues like potholes, garbage, water leaks and broken infrastructure. Our platform keeps the process simple, visual and powerful while the government acts fast.</p>
             <div class="hero-actions">
-                <a href="/report/" class="btn btn-primary btn-lg">🎙️ Report an Issue</a>
-                <a href="/dashboard/" class="btn btn-secondary btn-lg">📊 View Dashboard</a>
+                <a href="/report/" class="btn btn-primary btn-lg">Report an Issue</a>
+                <a href="/dashboard/" class="btn btn-secondary btn-lg">View Dashboard</a>
+            </div>
+        </div>
+        <div class="hero-visual slide-up">
+            <div class="hero-visual-graphic">
+                <div class="hero-visual-image">
+                    <img src="{% static 'img/home-hero-1.svg' %}" alt="Report location and impact" class="hero-visual-img">
+                </div>
+                <div class="hero-visual-card primary">
+                    <div class="hero-chip">Community Impact</div>
+                    <h3>Community-first reporting</h3>
+                    <p>Every complaint is captured with location, image evidence and AI analysis so the government can act with confidence.</p>
+                </div>
+                <div class="hero-visual-card secondary">
+                    <div class="hero-chip">Instant insights</div>
+                    <h3>AI-driven validation</h3>
+                    <p>Issues are classified automatically, tagged by urgency, and routed to the right team without extra steps.</p>
+                </div>
             </div>
         </div>
     </div>
@@ -36,25 +53,25 @@
         <p class="section-subtitle">Four simple steps to make your voice heard</p>
         <div class="steps-grid">
             <div class="glass-card step-card fade-in">
-                <div class="step-icon">📸</div>
+                <div class="step-icon">1</div>
                 <div class="step-num">STEP 01</div>
                 <div class="step-title">Capture Evidence</div>
                 <div class="step-desc">Take a photo of the issue — pothole, garbage pile, broken pipe, or any public problem.</div>
             </div>
             <div class="glass-card step-card fade-in" style="animation-delay:0.1s">
-                <div class="step-icon">📍</div>
+                <div class="step-icon">2</div>
                 <div class="step-num">STEP 02</div>
                 <div class="step-title">Add Location</div>
                 <div class="step-desc">Search or pin the exact location on the map so authorities know where to act.</div>
             </div>
             <div class="glass-card step-card fade-in" style="animation-delay:0.2s">
-                <div class="step-icon">🤖</div>
+                <div class="step-icon">3</div>
                 <div class="step-num">STEP 03</div>
                 <div class="step-title">AI Analyzes</div>
                 <div class="step-desc">Our AI classifies the issue, detects urgency, and generates a structured report automatically.</div>
             </div>
             <div class="glass-card step-card fade-in" style="animation-delay:0.3s">
-                <div class="step-icon">🏛️</div>
+                <div class="step-icon">4</div>
                 <div class="step-num">STEP 04</div>
                 <div class="step-title">Government Acts</div>
                 <div class="step-desc">Verified complaints reach the relevant government department for resolution.</div>
@@ -81,14 +98,14 @@
         <h2 class="section-title">What Can You Report?</h2>
         <p class="section-subtitle">AAWAJ covers all major civic issues in Kathmandu Valley</p>
         <div class="steps-grid" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr));">
-            <div class="glass-card step-card"><div class="step-icon">🛣️</div><div class="step-title">Roads & Potholes</div></div>
-            <div class="glass-card step-card"><div class="step-icon">🗑️</div><div class="step-title">Garbage & Waste</div></div>
-            <div class="glass-card step-card"><div class="step-icon">💧</div><div class="step-title">Water & Drainage</div></div>
-            <div class="glass-card step-card"><div class="step-icon">⚡</div><div class="step-title">Electricity</div></div>
-            <div class="glass-card step-card"><div class="step-icon">🏥</div><div class="step-title">Health Hazards</div></div>
-            <div class="glass-card step-card"><div class="step-icon">🏫</div><div class="step-title">Education</div></div>
-            <div class="glass-card step-card"><div class="step-icon">⚖️</div><div class="step-title">Corruption</div></div>
-            <div class="glass-card step-card"><div class="step-icon">🏗️</div><div class="step-title">Infrastructure</div></div>
+            <div class="glass-card step-card"><div class="step-icon">R</div><div class="step-title">Roads & Potholes</div></div>
+            <div class="glass-card step-card"><div class="step-icon">G</div><div class="step-title">Garbage & Waste</div></div>
+            <div class="glass-card step-card"><div class="step-icon">W</div><div class="step-title">Water & Drainage</div></div>
+            <div class="glass-card step-card"><div class="step-icon">E</div><div class="step-title">Electricity</div></div>
+            <div class="glass-card step-card"><div class="step-icon">H</div><div class="step-title">Health Hazards</div></div>
+            <div class="glass-card step-card"><div class="step-icon">S</div><div class="step-title">Education</div></div>
+            <div class="glass-card step-card"><div class="step-icon">C</div><div class="step-title">Corruption</div></div>
+            <div class="glass-card step-card"><div class="step-icon">I</div><div class="step-title">Infrastructure</div></div>
         </div>
     </div>
 </section>
@@ -98,7 +115,7 @@
     <div class="container">
         <h2 style="font-size:2.5rem;font-weight:900;margin-bottom:1rem;">Ready to raise your <span style="background:var(--gradient-hero);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">AAWAJ</span>?</h2>
         <p style="color:var(--text-secondary);font-size:1.1rem;margin-bottom:2rem;">Your complaint can change your neighborhood. Start now — it takes less than 2 minutes.</p>
-        <a href="/report/" class="btn btn-primary btn-lg">🎙️ Report an Issue Now</a>
+        <a href="/report/" class="btn btn-primary btn-lg">Report an Issue Now</a>
     </div>
 </section>
 {% endblock %}

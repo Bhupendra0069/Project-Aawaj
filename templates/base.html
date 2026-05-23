@@ -8,14 +8,14 @@
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎙️</text></svg>">
+        <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>A</text></svg>">
     {% block head %}{% endblock %}
 </head>
 <body>
     <!-- Navbar -->
     <nav class="navbar" id="navbar">
         <a href="/" class="nav-brand">
-            <span class="nav-brand-icon">🎙️</span>
+            <span class="nav-brand-icon">A</span>
             <span class="nav-brand-text">AAWAJ</span>
         </a>
         <button class="nav-toggle" id="navToggle" aria-label="Menu">☰</button>
@@ -34,7 +34,7 @@
             {% else %}
             <li><a href="/login/">Login</a></li>
             {% endif %}
-            <li><a href="/report/" class="nav-cta">🎙️ Report Issue</a></li>
+            <li><a href="/report/" class="nav-cta">Report Issue</a></li>
         </ul>
     </nav>
 
@@ -48,7 +48,7 @@
         <div class="container">
             <div class="footer-grid">
                 <div>
-                    <div class="footer-brand">🎙️ AAWAJ</div>
+                    <div class="footer-brand">AAWAJ</div>
                     <p class="footer-desc">Digital voice of the people. AI-powered civic complaint platform for Kathmandu Valley, Nepal.</p>
                 </div>
                 <div>

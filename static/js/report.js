@@ -395,7 +395,27 @@ function stopRecording() {
     document.getElementById('recordBtn').classList.remove('recording');
     document.getElementById('recordBtn').textContent = '🎤';
     document.getElementById('recordStatus').textContent = 'Recording saved';
+    document.getElementById('audioActions').style.display = 'block';
     document.getElementById('detailError').style.display = 'none';
+}
+
+function deleteAudio() {
+    // Clear the audio blob and reset all audio-related variables
+    audioBlob = null;
+    audioChunks = [];
+    
+    // Hide the audio player and actions
+    const player = document.getElementById('audioPlayback');
+    player.src = '';
+    player.style.display = 'none';
+    document.getElementById('audioActions').style.display = 'none';
+    
+    // Reset recording state
+    document.getElementById('recordStatus').textContent = 'Click to start recording';
+    document.getElementById('recordTime').textContent = '00:00';
+    recordSeconds = 0;
+    
+    showToast('Audio deleted. You can record again.', 'info');
 }
 
 // ===== REVIEW =====

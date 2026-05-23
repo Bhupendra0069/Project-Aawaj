@@ -63,7 +63,7 @@
 document.addEventListener('DOMContentLoaded', () => {
     const map = L.map('contactMap').setView([27.7172, 85.3240], 14);
     L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { attribution: '© CartoDB' }).addTo(map);
-    L.marker([27.7172, 85.3240]).addTo(map).bindPopup('🎙️ AAWAJ HQ<br>Kathmandu, Nepal').openPopup();
+    L.marker([27.7172, 85.3240]).addTo(map).bindPopup('AAWAJ HQ<br>Kathmandu, Nepal').openPopup();
 });
 
 document.getElementById('contactForm').addEventListener('submit', async (e) => {
