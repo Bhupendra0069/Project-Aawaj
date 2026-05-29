@@ -7,8 +7,12 @@
 
     <div class="stats-grid" style="margin-bottom:2rem;" id="dashStats">
         <div class="stat-card glass-card"><div class="stat-number" id="dTotal">-</div><div class="stat-label">Total</div></div>
-        <div class="stat-card glass-card"><div class="stat-number" id="dPublished">-</div><div class="stat-label">Active</div></div>
-        <div class="stat-card glass-card"><div class="stat-number" id="dResolved">-</div><div class="stat-label">Resolved</div></div>
+        <div class="stat-card glass-card" onclick="document.getElementById('complaintsSection').scrollIntoView({behavior:'smooth'})" style="cursor:pointer;" title="Click to view published complaints">
+            <div class="stat-number" id="dPublished">-</div><div class="stat-label">Active</div>
+        </div>
+        <div class="stat-card glass-card" onclick="window.location.href='/resolved/'" style="cursor:pointer;" title="Click to view resolved cases">
+            <div class="stat-number" id="dResolved">-</div><div class="stat-label">Resolved</div>
+        </div>
         <div class="stat-card glass-card"><div class="stat-number" id="dPending">-</div><div class="stat-label">Under Review</div></div>
     </div>
 
@@ -24,7 +28,7 @@
         </div>
     </div>
 
-    <div class="filter-bar">
+    <div class="filter-bar" id="complaintsSection">
         <button class="filter-chip active" onclick="filterCategory('all',this)">All</button>
         <button class="filter-chip" onclick="filterCategory('roads',this)">Roads</button>
         <button class="filter-chip" onclick="filterCategory('garbage',this)">Garbage</button>

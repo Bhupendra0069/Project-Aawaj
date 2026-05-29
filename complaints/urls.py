@@ -9,6 +9,7 @@ from . import views
 urlpatterns = [
     # API endpoints
     path('api/complaints/submit/', views.api_submit_complaint, name='api_submit'),
+    path('api/complaints/check-duplicate/', views.api_check_duplicate_image, name='api_check_duplicate'),
     path('api/complaints/<str:code>/status/', views.api_complaint_status, name='api_status'),
     path('api/complaints/public/', views.api_public_complaints, name='api_public'),
     path('api/dashboard/stats/', views.api_dashboard_stats, name='api_stats'),
@@ -16,6 +17,8 @@ urlpatterns = [
 
     # Contact form API
     path('api/contact/submit/', views.api_contact_submit, name='api_contact'),
+    path('api/contact/messages/', views.api_contact_messages, name='api_contact_messages'),
+    path('api/contact/<int:message_id>/read/', views.api_contact_mark_read, name='api_contact_read'),
 
     # Moderation API
     path('api/moderation/queue/', views.api_moderation_queue, name='api_mod_queue'),
@@ -32,6 +35,9 @@ urlpatterns = [
 
     # AI Analysis
     path('api/ai/analyze-image/', views.api_ai_analyze_image, name='api_ai_analyze'),
+
+    # Resolved Cases API
+    path('api/resolved/cases/', views.api_resolved_cases, name='api_resolved_cases'),
 
     # Phase 2 — Analytics API
     path('api/hotspots/', views.api_hotspots, name='api_hotspots'),

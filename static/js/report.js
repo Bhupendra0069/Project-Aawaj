@@ -239,6 +239,15 @@ function useMyGPSLocation() {
             const lat = position.coords.latitude;
             const lng = position.coords.longitude;
 
+            // Validate within Kathmandu Valley
+            if (!isInsideKathmanduValley(lat, lng)) {
+                showToast('Your current location is outside Kathmandu Valley. AAWAJ only covers Kathmandu, Bhaktapur, and Lalitpur districts.', 'error');
+                btn.classList.remove('locating');
+                btn.disabled = false;
+                btnText.textContent = 'Use My Current Location';
+                return;
+            }
+
             // Update map
             locationMarker.setLatLng([lat, lng]);
             locationMap.setView([lat, lng], 16);
@@ -283,9 +292,24 @@ function useMyGPSLocation() {
 }
 
 
+// ===== KATHMANDU VALLEY BOUNDS =====
+// Bounding box covering Kathmandu, Bhaktapur, and Lalitpur districts
+const KTM_VALLEY_BOUNDS = L.latLngBounds(
+    L.latLng(27.55, 85.15),  // Southwest corner
+    L.latLng(27.82, 85.55)   // Northeast corner
+);
+
+function isInsideKathmanduValley(lat, lng) {
+    return KTM_VALLEY_BOUNDS.contains(L.latLng(lat, lng));
+}
+
 // ===== LOCATION MAP =====
 function initLocationMap() {
-    locationMap = L.map('locationMap').setView([27.7172, 85.3240], 13);
+    locationMap = L.map('locationMap', {
+        maxBounds: KTM_VALLEY_BOUNDS.pad(0.1),
+        maxBoundsViscosity: 1.0,
+        minZoom: 11
+    }).setView([27.7172, 85.3240], 13);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '© OpenStreetMap'
     }).addTo(locationMap);
@@ -293,11 +317,21 @@ function initLocationMap() {
     locationMarker = L.marker([27.7172, 85.3240], { draggable: true }).addTo(locationMap);
     locationMarker.on('dragend', function () {
         const pos = locationMarker.getLatLng();
+        if (!isInsideKathmanduValley(pos.lat, pos.lng)) {
+            showToast('Location must be within Kathmandu Valley (Kathmandu, Bhaktapur, or Lalitpur)', 'error');
+            locationMarker.setLatLng([27.7172, 85.3240]);
+            locationMap.setView([27.7172, 85.3240], 13);
+            return;
+        }
         updateLocation(pos.lat, pos.lng);
         reverseGeocode(pos.lat, pos.lng);
     });
 
     locationMap.on('click', function (e) {
+        if (!isInsideKathmanduValley(e.latlng.lat, e.latlng.lng)) {
+            showToast('Location must be within Kathmandu Valley (Kathmandu, Bhaktapur, or Lalitpur)', 'error');
+            return;
+        }
         locationMarker.setLatLng(e.latlng);
         updateLocation(e.latlng.lat, e.latlng.lng);
         reverseGeocode(e.latlng.lat, e.latlng.lng);
@@ -311,7 +345,7 @@ function initLocationMap() {
         const q = searchInput.value.trim();
         if (q.length < 3) { sugBox.style.display = 'none'; return; }
         searchTimeout = setTimeout(() => {
-            fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}&countrycodes=np&limit=5`)
+            fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}&countrycodes=np&viewbox=85.15,27.55,85.55,27.82&bounded=1&limit=5`)
                 .then(r => r.json())
                 .then(results => {
                     if (!results.length) { sugBox.style.display = 'none'; return; }
@@ -323,6 +357,11 @@ function initLocationMap() {
 }
 
 function selectLocation(lat, lng, name) {
+    if (!isInsideKathmanduValley(lat, lng)) {
+        showToast('This location is outside Kathmandu Valley. Please select a location within Kathmandu, Bhaktapur, or Lalitpur.', 'error');
+        document.getElementById('locationSuggestions').style.display = 'none';
+        return;
+    }
     locationMarker.setLatLng([lat, lng]);
     locationMap.setView([lat, lng], 16);
     updateLocation(lat, lng);

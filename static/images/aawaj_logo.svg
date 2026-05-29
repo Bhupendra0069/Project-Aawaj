@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 80" fill="none">
+  <defs>
+    <linearGradient id="logoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#4361EE"/>
+      <stop offset="100%" style="stop-color:#3A0CA3"/>
+    </linearGradient>
+  </defs>
+  <!-- Megaphone Icon -->
+  <g transform="translate(10, 10)">
+    <!-- Megaphone body -->
+    <path d="M8 22 L22 14 L22 46 L8 38 Z" fill="url(#logoGrad)"/>
+    <rect x="2" y="22" width="8" height="16" rx="2" fill="url(#logoGrad)"/>
+    <!-- Megaphone bell -->
+    <path d="M22 14 Q40 6 42 4 L42 56 Q40 54 22 46 Z" fill="url(#logoGrad)" opacity="0.85"/>
+    <!-- Sound waves -->
+    <path d="M50 20 Q58 30 50 40" stroke="#4361EE" stroke-width="3" stroke-linecap="round" fill="none" opacity="0.7"/>
+    <path d="M56 14 Q68 30 56 46" stroke="#4361EE" stroke-width="3" stroke-linecap="round" fill="none" opacity="0.5"/>
+    <path d="M62 8 Q78 30 62 52" stroke="#4361EE" stroke-width="3" stroke-linecap="round" fill="none" opacity="0.3"/>
+  </g>
+  <!-- Text -->
+  <text x="95" y="52" font-family="Inter, system-ui, sans-serif" font-size="38" font-weight="800" fill="url(#logoGrad)" letter-spacing="3">AAWAJ</text>
+  <!-- Tagline -->
+  <text x="97" y="68" font-family="Inter, system-ui, sans-serif" font-size="10" font-weight="500" fill="#6B7280" letter-spacing="4">VOICE OF THE PEOPLE</text>
+</svg>

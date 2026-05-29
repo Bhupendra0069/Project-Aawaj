@@ -1,33 +1,65 @@
+# ========================
 # Virtual Environment
+# ========================
 venv/
 env/
 .venv/
+ENV/
 
+# ========================
 # Python
+# ========================
 __pycache__/
 *.py[cod]
 *.pyo
 *.egg-info/
+*.egg
 dist/
 build/
+*.whl
 
+# ========================
 # Django
+# ========================
 db.sqlite3
+db.sqlite3-journal
 *.log
 staticfiles/
+collected_static/
 
+# ========================
 # Media uploads
+# ========================
 media/
 
+# ========================
 # Environment variables
+# ========================
 .env
+.env.local
+.env.production
 
-# IDE
+# ========================
+# IDE / Editor
+# ========================
 .vscode/
 .idea/
 *.swp
 *.swo
+*~
+.project
+.settings/
 
-# OS
+# ========================
+# OS generated files
+# ========================
 Thumbs.db
 .DS_Store
+desktop.ini
+
+# ========================
+# Misc
+# ========================
+*.bak
+*.tmp
+*.temp

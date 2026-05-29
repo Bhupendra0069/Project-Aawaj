@@ -5,34 +5,237 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - AAWAJ</title>
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <style>
+        .login-page {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--bg-primary);
+        }
+        .login-card {
+            width: 100%;
+            max-width: 440px;
+            padding: 2.5rem;
+        }
+        .role-selection {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        .role-card {
+            display: flex;
+            align-items: center;
+            gap: 1.2rem;
+            padding: 1.4rem 1.5rem;
+            border-radius: 14px;
+            border: 1.5px solid var(--border-glass);
+            background: var(--bg-glass);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .role-card:hover {
+            border-color: var(--nepal-blue);
+            background: rgba(0, 56, 147, 0.06);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0, 56, 147, 0.1);
+        }
+        .role-card-icon {
+            width: 52px;
+            height: 52px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            flex-shrink: 0;
+        }
+        .role-card-icon.moderator {
+            background: linear-gradient(135deg, rgba(124, 58, 237, 0.15), rgba(59, 130, 246, 0.15));
+            color: #7c3aed;
+        }
+        .role-card-icon.government {
+            background: linear-gradient(135deg, rgba(220, 20, 60, 0.12), rgba(0, 56, 147, 0.12));
+            color: var(--nepal-blue);
+        }
+        .role-card-info h3 {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 0.2rem;
+        }
+        .role-card-info p {
+            font-size: 0.82rem;
+            color: var(--text-muted);
+            margin: 0;
+        }
+        .role-card-arrow {
+            margin-left: auto;
+            color: var(--text-muted);
+            font-size: 1.2rem;
+            transition: transform 0.2s;
+        }
+        .role-card:hover .role-card-arrow {
+            transform: translateX(4px);
+            color: var(--nepal-blue);
+        }
+
+        /* Views */
+        .login-view {
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+        .login-view.hidden {
+            display: none;
+        }
+        .login-view.fade-out {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+
+        /* Role badge on login form */
+        .role-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 0.35rem 0.9rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-bottom: 1.2rem;
+        }
+        .role-badge.moderator {
+            background: linear-gradient(135deg, rgba(124, 58, 237, 0.15), rgba(59, 130, 246, 0.15));
+            color: #7c3aed;
+        }
+        .role-badge.government {
+            background: linear-gradient(135deg, rgba(220, 20, 60, 0.12), rgba(0, 56, 147, 0.12));
+            color: var(--nepal-blue);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            text-decoration: none;
+            cursor: pointer;
+            transition: color 0.2s;
+            margin-bottom: 1.5rem;
+        }
+        .back-link:hover {
+            color: var(--text-primary);
+        }
+    </style>
 </head>
 <body>
 <div class="login-page">
     <div class="glass-card login-card">
+        <!-- Header -->
         <div style="text-align:center;margin-bottom:2rem;">
-            <div style="font-size:3rem;margin-bottom:0.5rem;">🎙️</div>
-            <h1 style="font-size:1.8rem;font-weight:800;background:var(--gradient-hero);background-clip: text;-webkit-text-fill-color:transparent;">AAWAJ</h1>
-            <p style="color:var(--text-secondary);font-size:0.9rem;margin-top:0.5rem;">Moderator & Government Portal</p>
+            <h1 style="font-size:1.8rem;font-weight:800;background:var(--gradient-hero);background-clip:text;-webkit-text-fill-color:transparent;">AAWAJ</h1>
+            <p style="color:var(--text-secondary);font-size:0.9rem;margin-top:0.5rem;">Staff & Authority Portal</p>
         </div>
-        <form id="loginForm">
-            {% csrf_token %}
-            <div class="form-group">
-                <label class="form-label">Username</label>
-                <input type="text" class="form-input" id="username" name="username" placeholder="Enter username" required>
+
+        <!-- View 1: Role Selection -->
+        <div id="roleSelectView" class="login-view">
+            <p style="font-weight:600;font-size:0.95rem;margin-bottom:1rem;color:var(--text-primary);">Select your role to continue</p>
+            <div class="role-selection">
+                <div class="role-card" onclick="selectRole('moderator')">
+                    <div class="role-card-icon moderator">🛡️</div>
+                    <div class="role-card-info">
+                        <h3>Moderator</h3>
+                        <p>Review & moderate citizen complaints</p>
+                    </div>
+                    <div class="role-card-arrow">→</div>
+                </div>
+                <div class="role-card" onclick="selectRole('government')">
+                    <div class="role-card-icon government">🏛️</div>
+                    <div class="role-card-info">
+                        <h3>Government</h3>
+                        <p>Government dashboard & case management</p>
+                    </div>
+                    <div class="role-card-arrow">→</div>
+                </div>
             </div>
-            <div class="form-group">
-                <label class="form-label">Password</label>
-                <input type="password" class="form-input" id="password" name="password" placeholder="Enter password" required>
+            <div style="text-align:center;margin-top:1.5rem;">
+                <a href="/" style="color:var(--text-muted);font-size:0.85rem;text-decoration:none;">← Back to Home</a>
             </div>
-            <p id="loginError" style="color:var(--danger);font-size:0.85rem;display:none;margin-bottom:1rem;"></p>
-            <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;" id="loginBtn">Login</button>
-        </form>
-        <div style="text-align:center;margin-top:1.5rem;">
-            <a href="/" style="color:var(--text-muted);font-size:0.85rem;text-decoration:none;">← Back to Home</a>
+        </div>
+
+        <!-- View 2: Login Form -->
+        <div id="loginFormView" class="login-view hidden">
+            <a class="back-link" onclick="showRoleSelection()">← Change role</a>
+            <div style="text-align:center;">
+                <span class="role-badge" id="roleBadge"></span>
+            </div>
+            <form id="loginForm">
+                {% csrf_token %}
+                <input type="hidden" id="selectedRole" name="role" value="">
+                <div class="form-group">
+                    <label class="form-label">Username</label>
+                    <input type="text" class="form-input" id="username" name="username" placeholder="Enter username" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Password</label>
+                    <input type="password" class="form-input" id="password" name="password" placeholder="Enter password" required>
+                </div>
+                <p id="loginError" style="color:var(--danger);font-size:0.85rem;display:none;margin-bottom:1rem;"></p>
+                <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;" id="loginBtn">Login</button>
+            </form>
+            <div style="text-align:center;margin-top:1.5rem;">
+                <a href="/" style="color:var(--text-muted);font-size:0.85rem;text-decoration:none;">← Back to Home</a>
+            </div>
         </div>
     </div>
 </div>
+
 <script>
+let currentRole = '';
+
+function selectRole(role) {
+    currentRole = role;
+    document.getElementById('selectedRole').value = role;
+
+    const badge = document.getElementById('roleBadge');
+    if (role === 'moderator') {
+        badge.className = 'role-badge moderator';
+        badge.innerHTML = '🛡️ Moderator Login';
+    } else {
+        badge.className = 'role-badge government';
+        badge.innerHTML = '🏛️ Government Login';
+    }
+
+    // Animate transition
+    const roleView = document.getElementById('roleSelectView');
+    const formView = document.getElementById('loginFormView');
+
+    roleView.classList.add('fade-out');
+    setTimeout(() => {
+        roleView.classList.add('hidden');
+        roleView.classList.remove('fade-out');
+        formView.classList.remove('hidden');
+        // Focus username field
+        document.getElementById('username').focus();
+    }, 300);
+}
+
+function showRoleSelection() {
+    const roleView = document.getElementById('roleSelectView');
+    const formView = document.getElementById('loginFormView');
+
+    formView.classList.add('fade-out');
+    setTimeout(() => {
+        formView.classList.add('hidden');
+        formView.classList.remove('fade-out');
+        roleView.classList.remove('hidden');
+        // Clear form
+        document.getElementById('username').value = '';
+        document.getElementById('password').value = '';
+        document.getElementById('loginError').style.display = 'none';
+    }, 300);
+}
+
 document.getElementById('loginForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     const btn = document.getElementById('loginBtn');

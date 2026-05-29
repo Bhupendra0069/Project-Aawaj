@@ -53,6 +53,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'complaints.context_processors.user_role',
             ],
         },
     },
@@ -106,3 +107,9 @@ CORS_ALLOW_ALL_ORIGINS = True
 LOGIN_URL = '/login/'
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'
+
+# Gemini API Key (for AI image analysis)
+GEMINI_API_KEY = os.getenv('GEMINI_API_KEY', '')
+
+# Groq API Key (for AI image analysis — primary)
+GROQ_API_KEY = os.getenv('GROQ_API_KEY', '')

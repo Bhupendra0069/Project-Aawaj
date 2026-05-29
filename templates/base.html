@@ -27,9 +27,13 @@
             <li><a href="/about/" {% if request.path == '/about/' %}class="active"{% endif %}>About</a></li>
             <li><a href="/contact/" {% if request.path == '/contact/' %}class="active"{% endif %}>Contact</a></li>
             {% if user.is_authenticated %}
+            {% if is_moderator %}
             <li><a href="/moderation/" {% if 'moderation' in request.path %}class="active"{% endif %}>Moderation</a></li>
+            {% endif %}
+            {% if is_government %}
             <li><a href="/government/" {% if request.path == '/government/' %}class="active"{% endif %}>Government</a></li>
             <li><a href="/government/analytics/" {% if 'analytics' in request.path %}class="active"{% endif %}>Analytics</a></li>
+            {% endif %}
             <li><a href="/logout/" style="color:var(--danger)">Logout</a></li>
             {% else %}
             <li><a href="/login/">Login</a></li>

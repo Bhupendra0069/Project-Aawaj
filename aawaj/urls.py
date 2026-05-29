@@ -21,6 +21,7 @@ urlpatterns = [
     path('government/case/<int:complaint_id>/', views.government_case_detail_view, name='gov_case_detail'),
     path('government/analytics/', views.government_analytics_view, name='gov_analytics'),
     path('map/', views.map_view, name='map'),
+    path('resolved/', views.resolved_cases_view, name='resolved_cases'),
     path('about/', views.about_view, name='about'),
     path('contact/', views.contact_view, name='contact'),
     path('login/', views.login_view, name='login'),

@@ -8,19 +8,43 @@
             <h1 class="section-title" style="margin-bottom:0.3rem;">Moderation Panel</h1>
             <p style="color:var(--text-secondary);">Review and moderate citizen complaints</p>
         </div>
-        <div style="display:flex;gap:0.5rem;">
+        <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
+            <button class="filter-chip active" id="tabComplaints" onclick="switchTab('complaints')">📋 Complaints</button>
+            <button class="filter-chip" id="tabMessages" onclick="switchTab('messages')">
+                ✉️ Messages <span id="unreadBadge" style="background:var(--danger);color:#fff;border-radius:10px;padding:1px 7px;font-size:0.7rem;margin-left:4px;display:none;">0</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Complaints Tab -->
+    <div id="complaintsTab">
+        <div style="display:flex;gap:0.5rem;margin-bottom:1.5rem;">
             <button class="filter-chip active" onclick="loadQueue('pending_review',this)">⏳ Pending</button>
             <button class="filter-chip" onclick="loadQueue('published',this)">✅ Approved</button>
             <button class="filter-chip" onclick="loadQueue('rejected',this)">❌ Rejected</button>
         </div>
+        <div class="stats-grid" style="margin-bottom:2rem;">
+            <div class="stat-card glass-card"><div class="stat-number" id="mPending">0</div><div class="stat-label">Pending Review</div></div>
+            <div class="stat-card glass-card"><div class="stat-number" id="mApproved">0</div><div class="stat-label">Approved</div></div>
+            <div class="stat-card glass-card"><div class="stat-number" id="mRejected">0</div><div class="stat-label">Rejected</div></div>
+            <div class="stat-card glass-card"><div class="stat-number" id="mToday">0</div><div class="stat-label">Today</div></div>
+        </div>
+        <div id="modQueue"><div class="spinner"></div></div>
     </div>
-    <div class="stats-grid" style="margin-bottom:2rem;">
-        <div class="stat-card glass-card"><div class="stat-number" id="mPending">0</div><div class="stat-label">Pending Review</div></div>
-        <div class="stat-card glass-card"><div class="stat-number" id="mApproved">0</div><div class="stat-label">Approved</div></div>
-        <div class="stat-card glass-card"><div class="stat-number" id="mRejected">0</div><div class="stat-label">Rejected</div></div>
-        <div class="stat-card glass-card"><div class="stat-number" id="mToday">0</div><div class="stat-label">Today</div></div>
+
+    <!-- Messages Tab -->
+    <div id="messagesTab" style="display:none;">
+        <div style="display:flex;gap:0.5rem;margin-bottom:1.5rem;">
+            <button class="filter-chip active" id="msgFilterAll" onclick="loadMessages('all',this)">All</button>
+            <button class="filter-chip" id="msgFilterUnread" onclick="loadMessages('unread',this)">📩 Unread</button>
+            <button class="filter-chip" id="msgFilterRead" onclick="loadMessages('read',this)">✓ Read</button>
+        </div>
+        <div class="stats-grid" style="margin-bottom:2rem;grid-template-columns:repeat(2,1fr);">
+            <div class="stat-card glass-card"><div class="stat-number" id="msgTotal">0</div><div class="stat-label">Total Messages</div></div>
+            <div class="stat-card glass-card"><div class="stat-number" id="msgUnread" style="color:var(--danger);">0</div><div class="stat-label">Unread</div></div>
+        </div>
+        <div id="messagesList"><div class="spinner"></div></div>
     </div>
-    <div id="modQueue"><div class="spinner"></div></div>
 </div>
 
 <!-- Detail Modal -->
@@ -34,15 +58,52 @@
         <div id="modalActions" style="display:flex;gap:1rem;margin-top:1.5rem;"></div>
     </div>
 </div>
+
+<!-- Message Detail Modal -->
+<div class="modal-overlay" id="msgModal">
+    <div class="modal" style="max-width:600px;">
+        <div class="modal-header">
+            <h2 id="msgModalTitle">Message</h2>
+            <button class="modal-close" onclick="closeMsgModal()">✕</button>
+        </div>
+        <div id="msgModalContent"></div>
+    </div>
+</div>
 {% endblock %}
 {% block scripts %}
 <script>
 let currentFilter = 'pending_review';
-document.addEventListener('DOMContentLoaded', () => loadQueue('pending_review'));
+let currentMsgFilter = 'all';
+document.addEventListener('DOMContentLoaded', () => { loadQueue('pending_review'); loadUnreadCount(); });
 
+// ===== TAB SWITCHING =====
+function switchTab(tab) {
+    document.getElementById('tabComplaints').classList.toggle('active', tab === 'complaints');
+    document.getElementById('tabMessages').classList.toggle('active', tab === 'messages');
+    document.getElementById('complaintsTab').style.display = tab === 'complaints' ? 'block' : 'none';
+    document.getElementById('messagesTab').style.display = tab === 'messages' ? 'block' : 'none';
+    if (tab === 'messages') loadMessages('all');
+}
+
+// ===== UNREAD BADGE =====
+function loadUnreadCount() {
+    fetch('/api/contact/messages/?filter=unread')
+        .then(r => r.json())
+        .then(data => {
+            const count = data.unread_count || 0;
+            const badge = document.getElementById('unreadBadge');
+            if (count > 0) { badge.textContent = count; badge.style.display = 'inline'; }
+            else { badge.style.display = 'none'; }
+        }).catch(() => {});
+}
+
+// ===== COMPLAINTS =====
 function loadQueue(status, el) {
     currentFilter = status;
-    if (el) { document.querySelectorAll('.filter-chip').forEach(c=>c.classList.remove('active')); el.classList.add('active'); }
+    if (el) {
+        el.closest('div').querySelectorAll('.filter-chip').forEach(c=>c.classList.remove('active'));
+        el.classList.add('active');
+    }
     fetch('/api/moderation/queue/?status=' + status)
         .then(r => { if (r.status === 401) { window.location.href = '/login/'; return; } return r.json(); })
         .then(data => {
@@ -117,6 +178,87 @@ async function modAction(id, action) {
         if (data.success) { showToast(data.message, 'success'); loadQueue(currentFilter); }
         else showToast(data.error || 'Action failed', 'error');
     } catch (e) { showToast('Network error', 'error'); }
+}
+
+// ===== CONTACT MESSAGES =====
+function loadMessages(filter, el) {
+    currentMsgFilter = filter || 'all';
+    if (el) {
+        el.closest('div').querySelectorAll('.filter-chip').forEach(c=>c.classList.remove('active'));
+        el.classList.add('active');
+    }
+    fetch('/api/contact/messages/?filter=' + currentMsgFilter)
+        .then(r => r.json())
+        .then(data => {
+            document.getElementById('msgTotal').textContent = data.total_count || 0;
+            document.getElementById('msgUnread').textContent = data.unread_count || 0;
+
+            const msgs = data.messages || [];
+            const list = document.getElementById('messagesList');
+            if (!msgs.length) {
+                list.innerHTML = '<div class="glass-card" style="text-align:center;padding:3rem;color:var(--text-muted);">No messages found.</div>';
+                return;
+            }
+            list.innerHTML = '<div style="display:flex;flex-direction:column;gap:0.8rem;">' + msgs.map(m => `
+                <div class="glass-card" style="padding:1.2rem;cursor:pointer;border-left:4px solid ${m.is_read ? 'var(--border-glass)' : 'var(--accent-red)'};" onclick="showMessage(${m.id})">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem;flex-wrap:wrap;gap:0.5rem;">
+                        <div style="display:flex;align-items:center;gap:0.5rem;">
+                            ${!m.is_read ? '<span style="width:8px;height:8px;border-radius:50%;background:var(--accent-red);display:inline-block;"></span>' : ''}
+                            <strong style="font-size:0.95rem;">${escapeHtml(m.name)}</strong>
+                            <span style="color:var(--text-muted);font-size:0.82rem;">· ${escapeHtml(m.email)}</span>
+                        </div>
+                        <span style="color:var(--text-muted);font-size:0.78rem;">${formatDate(m.created_at)}</span>
+                    </div>
+                    <div style="font-weight:600;font-size:0.9rem;margin-bottom:0.3rem;">${escapeHtml(m.subject || 'No subject')}</div>
+                    <p style="color:var(--text-secondary);font-size:0.85rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin:0;">${escapeHtml(m.message).substring(0,120)}${m.message.length > 120 ? '...' : ''}</p>
+                </div>
+            `).join('') + '</div>';
+
+            loadUnreadCount();
+        }).catch(() => {
+            document.getElementById('messagesList').innerHTML = '<p style="color:var(--danger);">Error loading messages.</p>';
+        });
+}
+
+function showMessage(id) {
+    // Mark as read
+    fetch('/api/contact/' + id + '/read/', {
+        method: 'POST',
+        headers: { 'X-CSRFToken': getCookie('csrftoken') }
+    }).then(() => { loadMessages(currentMsgFilter); });
+
+    // Find the message in the current list and show modal
+    fetch('/api/contact/messages/')
+        .then(r => r.json())
+        .then(data => {
+            const m = (data.messages || []).find(msg => msg.id === id);
+            if (!m) return;
+            document.getElementById('msgModalTitle').textContent = m.subject || 'Message';
+            document.getElementById('msgModalContent').innerHTML = `
+                <div style="margin-bottom:1.5rem;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.5rem;margin-bottom:1rem;">
+                        <div>
+                            <strong style="font-size:1.05rem;">${escapeHtml(m.name)}</strong>
+                            <br><a href="mailto:${escapeHtml(m.email)}" style="color:var(--accent-red);font-size:0.9rem;">${escapeHtml(m.email)}</a>
+                        </div>
+                        <span style="color:var(--text-muted);font-size:0.85rem;">${formatDate(m.created_at)}</span>
+                    </div>
+                    <div style="background:var(--bg-secondary);border-radius:12px;padding:1.2rem;line-height:1.7;color:var(--text-primary);font-size:0.95rem;">
+                        ${escapeHtml(m.message).replace(/\n/g, '<br>')}
+                    </div>
+                </div>
+                <a href="mailto:${escapeHtml(m.email)}?subject=Re: ${encodeURIComponent(m.subject || 'Your message to AAWAJ')}" class="btn btn-primary" style="width:100%;justify-content:center;">📧 Reply via Email</a>
+            `;
+            document.getElementById('msgModal').classList.add('active');
+        });
+}
+
+function closeMsgModal() { document.getElementById('msgModal').classList.remove('active'); }
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text || '';
+    return div.innerHTML;
 }
 </script>
 {% endblock %}

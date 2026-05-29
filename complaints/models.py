@@ -52,7 +52,7 @@ class Complaint(models.Model):
     )
     ai_generated_report = models.TextField(
         blank=True, default='',
-        help_text="AI-generated structured report for government"
+        help_text="AI-generated structured -report for government"
     )
 
     # Location
@@ -124,7 +124,27 @@ class ComplaintImage(models.Model):
         Complaint, on_delete=models.CASCADE, related_name='images'
     )
     image = models.ImageField(upload_to='complaints/images/%Y/%m/')
+    image_hash = models.CharField(
+        max_length=64, blank=True, default='',
+        db_index=True,
+        help_text="Perceptual hash of image for duplicate detection"
+    )
     uploaded_at = models.DateTimeField(auto_now_add=True)
+
+    def save(self, *args, **kwargs):
+        """Auto-calculate image hash on save if not already present."""
+        if not self.image_hash and self.image:
+            from .image_utils import calculate_image_hash
+            try:
+                self.image.seek(0)
+                calculated_hash = calculate_image_hash(self.image)
+                if calculated_hash:
+                    self.image_hash = calculated_hash
+                    print(f"[MODEL_SAVE] Auto-calculated hash for {self.complaint.complaint_code}: {self.image_hash}")
+            except Exception as e:
+                print(f"[MODEL_SAVE] Error calculating hash: {e}")
+        
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"Image for {self.complaint.complaint_code}"
